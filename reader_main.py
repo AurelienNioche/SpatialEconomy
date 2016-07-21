@@ -21,7 +21,7 @@ class GraphicManager(QThread):
 
     def run(self):
         
-        self.map = pickle.load(open("./data/map.p", mode='rb'))
+        self.map = pickle.load(open("../data/map.p", mode='rb'))
         matrix_temp = list() 
         
         self.matrix_list = { "0": list(), "1": list(), "2": list() }
