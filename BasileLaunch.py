@@ -1,14 +1,7 @@
 import numpy as np
 from writer_main import SimulationRunner, BackUp
 
-<<<<<<< HEAD
-# Basile's version of the eco launcher 
-# KIKOU
-=======
-# Basile's version of the exo launcher 
-# Kikoo
 
->>>>>>> master
 def simple_main():
 
     '''
