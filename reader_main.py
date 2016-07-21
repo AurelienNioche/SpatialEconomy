@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from module.graphics import EcoWindow
 from module.matplotlibInQt import PlotWindow
-import pickle, time
+import pickle
 from module.converter import read
 
 
@@ -23,51 +23,46 @@ class GraphicManager(QThread):
     def run(self):
 
         date = open("../data/last.txt", mode='r').read()
-        self.map = pickle.load(open("../data/map{}.p".format(date), mode='rb'))
-        matrix_temp = list() 
+        position_map = pickle.load(open("../data/position_map{}.p".format(date), mode='rb'))
         
-        self.matrix_list = { "0": list(), "1": list(), "2": list() }
+        matrix_list = { "0": list(), "1": list(), "2": list() }
         
-        for i in range(len(self.matrix_list)):
+        for i in range(len(matrix_list)):
             
-            self.matrix_list[str(i)] = \
+            matrix_list[str(i)] = \
                 read(self.map_limits["height"], table_name="exchange_{i}".format(i=i),
                      database_name="array_exchanges{}".format(date))
         
-        t_max = len(self.map) 
+        t_max = len(position_map)
       
         for i in range(t_max):
-            
-                        
+
             Event().wait(self.speed)
             
-            self.exchange_matrix = np.zeros((self.map_limits["width"], self.map_limits["height"]),
+            exchange_matrix = np.zeros((self.map_limits["width"], self.map_limits["height"]),
                                        dtype=[("0", float, 1),
                                               ("1", float, 1),
                                               ("2", float, 1)])
-            
-                        
-            for j in [0, 1, 2]:
-                
-              
-                self.exchange_matrix[str(j)][:] = self.matrix_list[str(j)][i][:]
-                 
-                
-             
-            
-            for j in [0,1,2]:
-                
-                self.exchange_queues[j].put(self.exchange_matrix[str(j)])
 
+            for j in range(3):
+              
+                exchange_matrix[str(j)][:] = matrix_list[str(j)][i][:]
             
-            agent_dic = self.map[i]
+            for j in range(3):
+                
+                self.exchange_queues[j].put(exchange_matrix[str(j)])
+
+            agent_dic = position_map[i]
            
             self.map_queue.put(agent_dic)
 
 
 def main():
 
-    map_limits = {"width": 25, "height": 25}
+    date = open("../data/last.txt", mode='r').read()
+    parameters = pickle.load(open("../data/parameters{}.p".format(date), mode='rb'))
+
+    map_limits = parameters["map_limits"]
 
     shutdown = Event()
     map_queue = Queue()

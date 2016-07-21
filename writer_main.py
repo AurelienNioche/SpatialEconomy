@@ -768,7 +768,7 @@ class BackUp(object):
                 write(matrix_list[i], table_name="exchange_{i}".format(i=i),
                       database_name='array_exchanges{}'.format(date), descr="{}/3".format(i+1))
         
-            pickle.dump(list_map, open("../data/map{}.p".format(date), mode='wb'))
+            pickle.dump(list_map, open("../data/position_map{}.p".format(date), mode='wb'))
 
         exchanges_proportions_list = results["exchanges_proportions_list"]
         pickle.dump(exchanges_proportions_list, open("../data/exchanges{}.p".format(date), mode='wb'))
@@ -784,21 +784,21 @@ def simple_main():
 
     parameters = \
         {
-            "workforce": np.array([10, 10, 10], dtype=int),
+            "workforce": np.array([1, 1, 1], dtype=int),
             "alpha": 0.3,  # Set the coefficient learning
             "tau": 0.03,  # Set the softmax parameter.
             "t_max": 10,  # Set the number of time units the simulation will run
             "stride": 1,  # by each agent at each round
             "epsilon": 0.3,
             "vision": 20,  # Set the importance of other agents'results in
-            "area": 20,  # front of an individual res
-            "map_limits": {"width": 20, "height": 20},
+            "area": 10,  # front of an individual res
+            "map_limits": {"width": 10, "height": 10},
 
         }
 
     results = SimulationRunner.main_runner(parameters=parameters)
 
-    BackUp.save_data(results, parameters, graphics=0)
+    BackUp.save_data(results, parameters, graphics=1)
 
 
 if __name__ == "__main__":
