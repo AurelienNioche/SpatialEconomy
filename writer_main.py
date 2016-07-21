@@ -8,6 +8,9 @@ from tqdm import tqdm
 from multiprocessing import Pool
 from datetime import datetime
 
+
+
+#TEST
 ############################################
 #           NOTATION                       #
 ############################################
@@ -752,7 +755,7 @@ class BackUp(object):
 
         date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
 
-        file = open("data/last.txt", mode="w")
+        file = open("../data/last.txt", mode="w")
         file.write(date)
         file.close()
 
@@ -768,11 +771,11 @@ class BackUp(object):
                 write(matrix_list[i], table_name="exchange_{i}".format(i=i),
                       database_name='array_exchanges{}'.format(date), descr="{}/3".format(i+1))
         
-            pickle.dump(list_map, open("./data/map{}.p".format(date), mode='wb'))
+            pickle.dump(list_map, open("../data/map{}.p".format(date), mode='wb'))
 
         exchanges_proportions_list = results["exchanges_proportions_list"]
-        pickle.dump(exchanges_proportions_list, open("./data/exchanges{}.p".format(date), mode='wb'))
-        pickle.dump(parameters, open("./data/parameters{}.p".format(date), mode='wb'))
+        pickle.dump(exchanges_proportions_list, open("../data/exchanges{}.p".format(date), mode='wb'))
+        pickle.dump(parameters, open("../data/parameters{}.p".format(date), mode='wb'))
 
 
 def simple_main():
