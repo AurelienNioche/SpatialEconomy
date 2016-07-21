@@ -24,11 +24,11 @@ def write(data, table_name='data', database_name='data', descr=''):
     # print('Time needed for writing', t1 - t0)
 
 
-def read(n_rows_by_matrix, table_name='data'):
+def read(n_rows_by_matrix, table_name='data', database_name='data'):
 
     t0 = time()
 
-    db = Database()
+    db = Database(database_name=database_name)
     data = db.read(n_rows=n_rows_by_matrix, table_name=table_name)
 
     t1 = time()

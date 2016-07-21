@@ -6,7 +6,8 @@ import numpy as np
 from module.graphics import EcoWindow
 from module.matplotlibInQt import PlotWindow
 import pickle, time
-import converter 
+from module.converter import read
+
 
 class GraphicManager(QThread):
 
@@ -20,15 +21,18 @@ class GraphicManager(QThread):
         self.speed = 0.01  # In seconds
 
     def run(self):
-        
-        self.map = pickle.load(open("../data/map.p", mode='rb'))
+
+        date = open("../data/last.txt", mode='r').read()
+        self.map = pickle.load(open("../data/map{}.p".format(date), mode='rb'))
         matrix_temp = list() 
         
         self.matrix_list = { "0": list(), "1": list(), "2": list() }
         
         for i in range(len(self.matrix_list)):
             
-            self.matrix_list[str(i)] =  converter.read(self.map_limits["height"], table_name="exchange_{i}".format(i=i))
+            self.matrix_list[str(i)] = \
+                read(self.map_limits["height"], table_name="exchange_{i}".format(i=i),
+                     database_name="array_exchanges{}".format(date))
         
         t_max = len(self.map) 
       

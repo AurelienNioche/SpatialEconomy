@@ -9,8 +9,6 @@ from multiprocessing import Pool
 from datetime import datetime
 
 
-
-#TEST
 ############################################
 #           NOTATION                       #
 ############################################

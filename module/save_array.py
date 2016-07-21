@@ -6,9 +6,9 @@ from time import time
 
 class Database(object):
 
-    def __init__(self, db_name="db"):
+    def __init__(self, database_name="db"):
 
-        self.db_path = "../data/{}.db".format(db_name)
+        self.db_path = "../data/{}.db".format(database_name)
 
         self.connexion = connect(self.db_path)
         self.cursor = self.connexion.cursor()
