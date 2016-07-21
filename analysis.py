@@ -116,11 +116,11 @@ from tqdm import tqdm
 #     welfare[1] = np.mean(a[:, 1])
 #     welfare[2] = np.mean(a[:, 2])
 
-last = open("results/last.txt").read()
+last = open("../data/last.txt").read()
 
-parameters = pickle.load(open("data/parameters{}.p".format(last), mode="rb"))
+parameters = pickle.load(open("../data/parameters{}.p".format(last), mode="rb"))
 
-data = pickle.load(open("data/exchanges{}.p".format(last), mode="rb"))
+data = pickle.load(open("../data/exchanges{}.p".format(last), mode="rb"))
 
 t_max = len(data)
 
