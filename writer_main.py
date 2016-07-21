@@ -50,7 +50,6 @@ from datetime import datetime
 # * '5' means the part of the market '31' where are the agents willing
 #       to exchange type-1 good against type-3 good.
 
-
 class Economy(object):
 
     def __init__(self, parameters ):
@@ -790,7 +789,7 @@ def simple_main():
             "workforce": np.array([10, 10, 10], dtype=int),
             "alpha": 0.3,  # Set the coefficient learning
             "tau": 0.03,  # Set the softmax parameter.
-            "t_max": 1000,  # Set the number of time units the simulation will run
+            "t_max": 10,  # Set the number of time units the simulation will run
             "stride": 1,  # by each agent at each round
             "epsilon": 0.3,
             "vision": 20,  # Set the importance of other agents'results in
@@ -807,25 +806,3 @@ def simple_main():
 if __name__ == "__main__":
 
     simple_main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
