@@ -8,11 +8,7 @@ def simple_main():
     Simplest program use
     :return: None
     '''
-<<<<<<< HEAD
-
-=======
     
->>>>>>> f6214bd9f569dc4b7931551ba261a4da26aafde8
     parameters = \
         {
             "workforce": np.array([10, 10, 10], dtype=int),
@@ -33,8 +29,4 @@ def simple_main():
 
 if __name__ == "__main__":
 
-<<<<<<< HEAD
     simple_main()
-=======
-    simple_main()
->>>>>>> f6214bd9f569dc4b7931551ba261a4da26aafde8

@@ -2,7 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9036385c-4825-4988-a5fd-c33a7b3bfbcd" name="Default" comment="">
+<<<<<<< HEAD
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/launch.py" />
+=======
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/AurelienLaunch.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/BasileLaunch.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+>>>>>>> f6214bd9f569dc4b7931551ba261a4da26aafde8
     </list>
     <ignored path="SpatialEconomy.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -36,11 +42,43 @@
           </provider>
         </entry>
       </file>
+<<<<<<< HEAD
       <file leaf-file-name="launch.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/launch.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="45">
               <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+=======
+      <file leaf-file-name="launch.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/launch.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="13" column="17" selection-start-line="0" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AurelienLaunch.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/AurelienLaunch.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="480">
+              <caret line="32" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BasileLaunch.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/BasileLaunch.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="480">
+              <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+>>>>>>> f6214bd9f569dc4b7931551ba261a4da26aafde8
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -64,6 +102,11 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/launch.py" />
+<<<<<<< HEAD
+=======
+        <option value="$PROJECT_DIR$/AurelienLaunch.py" />
+        <option value="$PROJECT_DIR$/BasileLaunch.py" />
+>>>>>>> f6214bd9f569dc4b7931551ba261a4da26aafde8
       </list>
     </option>
   </component>
@@ -409,8 +452,33 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/launch.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="45">
           <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+=======
+        <state relative-caret-position="180">
+          <caret line="13" column="17" selection-start-line="0" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AurelienLaunch.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="32" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BasileLaunch.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+>>>>>>> f6214bd9f569dc4b7931551ba261a4da26aafde8
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
