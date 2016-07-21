@@ -1,5 +1,5 @@
 import numpy as np
-from writer_main import SimulationRunner, BackUp
+from writer_main_optimized import SimulationRunner, BackUp
 
 
 def simple_main():
@@ -8,18 +8,18 @@ def simple_main():
     Simplest program use
     :return: None
     '''
-    #COMMIT
+
     parameters = \
         {
-            "workforce": np.array([20, 20, 20], dtype=int),
+            "workforce": np.array([10, 10, 10], dtype=int),
             "alpha": 0.3,  # Set the coefficient learning
             "tau": 0.03,  # Set the softmax parameter.
             "t_max": 1000,  # Set the number of time units the simulation will run
             "stride": 1,  # by each agent at each round
             "epsilon": 0.3,
-            "vision": 40,  # Set the importance of other agents'results in
-            "area": 40,  # front of an individual res
-            "map_limits": {"width": 40, "height": 40},
+            "vision": 10,  # Set the importance of other agents'results in
+            "area": 10,  # front of an individual res
+            "map_limits": {"width": 10, "height": 10},
 
         }
 

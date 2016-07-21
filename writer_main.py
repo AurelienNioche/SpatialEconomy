@@ -376,10 +376,10 @@ class Economy(object):
             success = choice_current_partner[::-1] == choice_current_agent
 
             self.finding_a_partner[idx].append(
-                (self.absolute_exchange_to_int[tuple(choice_current_agent)], success)
+                [self.absolute_exchange_to_int[tuple(choice_current_agent)], success]
             )
             self.finding_a_partner[partner_id].append(
-                (self.absolute_exchange_to_int[tuple(choice_current_partner)], success)
+                [self.absolute_exchange_to_int[tuple(choice_current_partner)], success]
             )
 
             if success:
