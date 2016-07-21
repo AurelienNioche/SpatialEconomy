@@ -2,7 +2,7 @@ import numpy as np
 from writer_main import SimulationRunner, BackUp
 
 # Basile's version of the exo launcher 
-
+# Kikoo
 
 def simple_main():
 
