@@ -8,7 +8,7 @@ def simple_main():
     Simplest program use
     :return: None
     '''
-
+    #COMMIT
     parameters = \
         {
             "workforce": np.array([10, 10, 10], dtype=int),
