@@ -290,11 +290,13 @@ class Economy(object):
         occupied_nearby_positions = self.encounter_check_nearby_positions(idx)
         self.encounter_look_for_partners(idx, occupied_nearby_positions)
         partner_id = self.encounter_ask_for_exchange(idx)  # Main method
+        matching_list = self.look_for_partners_choices(idx)
+        
+        if matching_list:
 
-        if partner_id is not None:
-            self.encounter_update(idx, partner_id)
-
-            self.encounter_exchange_count(idx, partner_id)
+            proportion_of_matching_choices = self.encounter_compute_proportion_of_matching_choices(matching_list)
+            
+       
 
     def encounter_check_nearby_positions(self, idx):
 
@@ -325,32 +327,35 @@ class Economy(object):
             i = tuple(i)
             self.idx_informers[idx].append(self.map_of_agents[i])
 
-    def encounter_ask_for_exchange(self, idx):
-
+    def encounter_look_for_partners_choices(self, idx):
+       
+        # The agent chooses the good he wants to obtain and asks agents around him for it  
+        
         self.choose(idx)
-
-        choice_current_agent = list(self.absolute_matrix[self.i_choice[idx], self.type[idx]])
-
-        idx_informers = self.idx_informers[idx]
-        np.random.shuffle(idx_informers)
-
-        for partner_id in idx_informers:
+        choice_current_agent = list(self.abosolute_matrix[self.i_choice[idx], self.type[idx]])
+        matching_list = list()
+        
+        # We retrieve the good wanted by the others and check if their needs and our agent need match
+        
+        for partner_id in self.idx_informers[idx]:
 
             self.choose(partner_id)
-
             choice_current_partner = list(self.absolute_matrix[self.i_choice[partner_id], self.type[partner_id]])
-
-            success = choice_current_partner[::-1] == choice_current_agent
-
-            self.finding_a_partner[idx], self.finding_a_partner[partner_id] = success, success
-
-            if success:
-                return partner_id
-
-            self.update_estimations(idx)
-            self.update_estimations(partner_id)
-
-        return None
+            success = int(choice_current_partner[::-1] == choice_current_agent)
+            matching_list.append(success)
+                
+         
+                
+        return matching_list
+   
+    
+    def encounter_compute_proportion_of_matching_choices(self, matching_list):
+        
+        proportion_of_matching_choices = len([x == 1  for x in matching_list]) / len(matching_list)
+        
+        return proportion_of_matching_choices 
+    
+    
 
     def encounter_update(self, idx, partner_id):
 
