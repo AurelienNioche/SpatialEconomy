@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from module.converter import write
 from tqdm import tqdm
 from multiprocessing import Pool
-import datetime
+from datetime import datetime
 
 
 ############################################
@@ -50,6 +50,7 @@ import datetime
 
 
 class Economy(object):
+
     def __init__(self, parameters):
 
         self.vision = parameters["vision"]
@@ -76,13 +77,9 @@ class Economy(object):
             }
 
         # # i: type; j: i_choice
-        self.int_to_relative_choice = np.array([
-            [0, 3, -1],
-            [1, 2, -1],
-            [-1, 0, 3],
-            [3, -1, 0],
-            [2, -1, 1]], dtype=int)
-
+        self.int_to_relative_choice = np.array([[0, 1, -1, -1, 3, 2],
+                                                [3, 2, 1, 0, -1, -1],
+                                                [-1, -1, 2, 3, 0, 1]], dtype=int)
 
         # To convert relative choices into absolute choices
         # 0 : 0 -> 1
@@ -282,7 +279,7 @@ class Economy(object):
     def encounter(self, idx):
 
         occupied_nearby_positions = self.encounter_check_nearby_positions(idx)
-        group_idx = self.encounter_look_for_partners(idx, occupied_nearby_positions)
+        group_idx = self.encounter_look_for_partners(occupied_nearby_positions)
         choice_current_agent, proportion_of_matching_choices, partner_id = \
             self.encounter_look_for_partners_choices(idx, group_idx)
 
@@ -316,12 +313,12 @@ class Economy(object):
 
         return occupied_nearby_positions
 
-    def encounter_look_for_partners(self, idx, positions_in_map):
+    def encounter_look_for_partners(self, positions_in_map):
 
         idx_informers = []
         for i in positions_in_map:
             i = tuple(i)
-            idx_informers[idx].append(self.map_of_agents[i])
+            idx_informers.append(self.map_of_agents[i])
         return idx_informers
 
     def encounter_look_for_partners_choices(self, idx, group_idx):
@@ -382,12 +379,13 @@ class Economy(object):
 
     def encounter_update_estimations(self, idx, group_idx, acceptance_frequency, exchange_type):
 
-        for idx in group_idx:
+        group_in_large_sense = group_idx + [idx]
+        for idx in group_in_large_sense:
 
             relative_choice = self.int_to_relative_choice[self.type[idx], exchange_type]
 
             self.estimation[relative_choice, idx] += \
-                self.alpha(acceptance_frequency - self.estimation[relative_choice, idx])
+                self.alpha * (acceptance_frequency - self.estimation[relative_choice, idx])
 
     def encounter_exchange_count(self, idx, partner_id):
 
@@ -459,7 +457,7 @@ class Economy(object):
         # Make a choice using the probability of choosing option 0 and a random number for each agent
         # Choose option 1 if random number > or = to probability of choosing option 0,
         #  choose option 0 otherwise
-        self.choice[idx] = random_number >= probability_of_choosing_option0[idx]
+        self.choice[idx] = random_number >= probability_of_choosing_option0
         self.i_choice[idx] = (self.decision[idx] * 2) + self.choice[idx]
 
         if self.i_choice[idx] == 0:
