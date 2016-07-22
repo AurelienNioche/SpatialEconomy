@@ -76,12 +76,12 @@ class Economy(object):
             }
 
         # # i: type; j: i_choice
-        # self.int_to_relative_choice = np.array([
-        #     [0, 3, -1],
-        #     [1, 2, -1],
-        #     [-1, 0, 3],
-        #     [3, -1, 0],
-        #     [2, -1, 1]], dtype=int)
+        self.int_to_relative_choice = np.array([
+            [0, 3, -1],
+            [1, 2, -1],
+            [-1, 0, 3],
+            [3, -1, 0],
+            [2, -1, 1]], dtype=int)
 
 
         # To convert relative choices into absolute choices
@@ -106,8 +106,6 @@ class Economy(object):
         self.temperature = parameters["tau"]  # Softmax parameter
 
         self.idx_informers = [[] for i in range(self.n)]
-        self.total_received_information = np.zeros(self.n, dtype=int)
-        self.epsilon = parameters["epsilon"]
 
         self.type = np.zeros(self.n, dtype=int)
         self.good = np.zeros(self.n, dtype=int)
@@ -135,27 +133,9 @@ class Economy(object):
         self.y_perimeter = np.zeros(self.n, dtype=[("min", int, 1),
                                                    ("max", int, 1)])
 
-        # The "decision array" is a 3D-matrix (d1: finding_a_partner, d2: decision, d3: choice).
-        # Allow us to retrieve the decision faced by an agent at t according to
-        #  * the fact that he succeeded in his exchange at t-1,
-        #  * the decision he faced at t-1,
-        #  * the choice he made at t-1.
-        self.decision_array = np.array(
-            [[[0, 0],
-              [1, 1]],
-             [[0, 1],
-              [0, 0]]])
-
         self.decision = np.zeros(self.n, dtype=int)
 
         self.choice = np.zeros(self.n, dtype=int)
-
-        self.random_number = np.zeros(self.n, dtype=float)  # Used for taking a decision
-
-        self.probability_of_choosing_option0 = np.zeros(self.n, dtype=float)
-
-        self.finding_a_partner = np.zeros(self.n, dtype=int)
-
         self.i_choice = np.zeros(self.n, dtype=int)
 
         # Values for each option of choice.
@@ -169,10 +149,7 @@ class Economy(object):
         self.value_option1 = np.zeros(self.n)
 
         # Initialize the estimations of easiness of each agents and for each type of exchange.
-        self.estimation_ik = np.zeros(self.n)
-        self.estimation_ij = np.zeros(self.n)
-        self.estimation_kj = np.zeros(self.n)
-        self.estimation_ki = np.zeros(self.n)
+        self.estimation = np.zeros((4, self.n))
 
         self.exchange_matrix = \
             np.zeros((self.map_limits["width"], self.map_limits["height"]),
@@ -180,8 +157,6 @@ class Economy(object):
 
         for i in [0, 1, 2]:
             self.exchange_matrix[str(i)] = np.zeros((self.map_limits["width"], self.map_limits["height"]))
-
-        self.success_averages = np.zeros((self.n, 6))  # 6 is the number of possible absolute choices
 
         self.choices_list = {"0": list(), "1": list(), "2": list()}
 
@@ -195,15 +170,7 @@ class Economy(object):
         # '1' means each type of exchange can be expected to be realized in only one unit of time
         # The more the value is close to zero, the more an exchange is expected to be hard.
         #
-        self.estimation_ij[:] = np.random.random()
-        self.estimation_ik[:] = np.random.random()
-        self.estimation_kj[:] = np.random.random()
-        self.estimation_ki[:] = np.random.random()
-
-        self.choice_transition = np.array([
-            [0, 1, 2, 3],
-            [-1, -1, 1, 0],
-            [3, 2, -1, -1]])
+        self.estimation[:] = np.random.random((4, self.n))
 
     # --------------------------------------------------||| SETUP |||----------------------------------------------- #
 
@@ -427,23 +394,8 @@ class Economy(object):
 
     def choose(self, idx):
 
-        self.choose_update_decision(idx)
         self.choose_update_options_values(idx)
         self.choose_decision_rule(idx)
-
-    def choose_update_decision(self, idx):
-
-        # Set the decision each agent faces at time t, according to the fact he succeeded or not in his exchange at t-1,
-        #  the decision he previously faced, and the choice he previously made.
-
-        try:
-            self.decision[idx] = \
-                self.decision_array[
-                    int(self.finding_a_partner[idx]),  # Last element of his list of tuples (choice, success)
-                    self.decision[idx],
-                    self.choice[idx]]
-        except:
-            self.decision[idx] = 0
 
     def choose_update_options_values(self, idx):
 
@@ -452,21 +404,21 @@ class Economy(object):
 
         # Set value to each option choice
 
-        self.value_ij[idx] = self.estimation_ij[idx]
-        self.value_kj[idx] = self.estimation_kj[idx]
+        self.value_ij[idx] = self.estimation[0, idx]
+        self.value_kj[idx] = self.estimation[2, idx]
 
-        if not (self.estimation_ik[idx] + self.estimation_kj[idx]) == 0:
+        if not (self.estimation[1, idx] + self.estimation[2, idx]) == 0:
 
             self.value_ik[idx] = \
-                (self.estimation_ik[idx] * self.estimation_kj[idx]) / \
-                (self.estimation_ik[idx] + self.estimation_kj[idx])
+                (self.estimation[1, idx] * self.estimation[2, idx]) / \
+                (self.estimation[1, idx] + self.estimation[2, idx])
         else:  # Avoid division by 0
             self.value_ik[idx] = 0
 
-        if not (self.estimation_ki[idx] + self.estimation_ij[idx]) == 0:
+        if not (self.estimation[3, idx] + self.estimation[0, idx]) == 0:
             self.value_ki[idx] = \
-                (self.estimation_ki[idx] * self.estimation_ij[idx]) / \
-                (self.estimation_ki[idx] + self.estimation_ij[idx])
+                (self.estimation[3, idx] * self.estimation[0, idx]) / \
+                (self.estimation[3, idx] + self.estimation[0, idx])
         else:  # Avoid division by 0
             self.value_ki[idx] = 0
 
@@ -479,29 +431,20 @@ class Economy(object):
             self.value_option0[idx] = self.value_kj[idx]
             self.value_option1[idx] = self.value_ki[idx]
 
-        # id0 = np.where(self.decision == 0)[0]
-        # id1 = np.where(self.decision == 1)[0]
-
-        # self.value_option0[id0] = self.value_ij[id0]
-        # self.value_option1[id0] = self.value_ik[id0]
-
-        # self.value_option0[id1] = self.value_kj[id1]
-        # self.value_option1[id1] = self.value_ki[id1]
-
         # Set a probability to current option 0 using softmax rule
         # (As there is only 2 options each time, computing probability for a unique option is sufficient)
 
-        self.probability_of_choosing_option0[idx] = \
+        probability_of_choosing_option0 = \
             np.exp(self.value_option0[idx] / self.temperature) / \
             (np.exp(self.value_option0[idx] / self.temperature) +
              np.exp(self.value_option1[idx] / self.temperature))
 
-        self.random_number[idx] = np.random.random()  # Generate random numbers
+        random_number = np.random.random()  # Generate random number
 
         # Make a choice using the probability of choosing option 0 and a random number for each agent
         # Choose option 1 if random number > or = to probability of choosing option 0,
         #  choose option 0 otherwise
-        self.choice[idx] = self.random_number[idx] >= self.probability_of_choosing_option0[idx]
+        self.choice[idx] = random_number >= probability_of_choosing_option0[idx]
         self.i_choice[idx] = (self.decision[idx] * 2) + self.choice[idx]
 
         if self.i_choice[idx] == 0:
@@ -514,77 +457,14 @@ class Economy(object):
 
     # ----------------------------------------------------||| ESTIMATIONS ||| ---------------------------------------- #
 
-    def update_estimations(self, idx):
+    def update_estimations(self, group_idx, acceptance_frequency, exchange_type):
 
-        estimation_types = np.array(
-            [self.estimation_ij[idx], self.estimation_ik[idx], self.estimation_kj[idx], self.estimation_ki[idx]])
+        for idx in group_idx:
 
-        i_type = self.type[idx]
-        i_choice = self.i_choice[idx]
+            relative_choice = self.int_to_relative_choice[self.type[idx], exchange_type]
 
-        # Here, we take the type and the choice of agent i, in order to compare him with the other agents
-        # and to compute his new estimation on the easiness to make the transaction he chose.
-        # Throughout the rest, each array or list containing 4 elements will correspond to estimation_ij,
-        # estimation_ik, estimation_kj and estimation_ki in this order.
-
-        agents_types = list()
-        agents_choices = list()
-        agents_results = list()
-
-        # We choose here a certain number (which corresponds to the quantity of information q_information)
-        # of informers among all the agents
-
-        informers = np.asarray(
-            self.idx_informers[idx])  # We get the agent's ids of all agent in the active agent vision,
-        # then we retrieve their type, choice, and if they found a partner or not during the last trial
-
-
-        agents_types = self.type[informers]
-        agents_choices = self.i_choice[informers]
-        agents_results = self.finding_a_partner[informers]
-
-        relative_agents_type = (agents_types - i_type) % 3
-
-        relative_choices = self.choice_transition_function(relative_agents_type, agents_choices)
-
-        # print(relative_choices)
-
-        averages = np.zeros(4)
-        for j in range(len(averages)):
-            id0 = np.where(np.asarray(relative_choices) == j)[0]
-            if id0.size:
-
-                averages[j] = np.mean(agents_results[id0])
-            else:
-                averages[j] = -1
-
-            self.total_received_information[idx] += len(id0)
-
-        # Here, we have computed the right type of transactions from the point of view of agent i compared with
-        # the type of choices which are made by the other agents. Then, once we have identified what agents
-        # contributes to the 4 different estimations for i, we give their results corresponding to their
-        # previous transaction according to the fact they succeeded in their transaction or not.
-
-        my_opinion = np.zeros(4)
-
-        my_opinion[i_choice] = self.epsilon * (self.finding_a_partner[idx] - estimation_types[i_choice])
-
-        others_opinion = np.zeros(4)
-        for i in range(len(others_opinion)):
-            if averages[i] is not -1:
-                others_opinion[i] = (1 - self.epsilon) * (averages[i] - estimation_types[i])
-
-        for i in range(len(others_opinion)):
-            estimation_types[i] += self.alpha * (my_opinion[i] + others_opinion[i])
-
-        self.estimation_ij[idx] = estimation_types[0]
-        self.estimation_ik[idx] = estimation_types[1]
-        self.estimation_kj[idx] = estimation_types[2]
-        self.estimation_ki[idx] = estimation_types[3]
-
-    def choice_transition_function(self, x, y):
-
-        return self.choice_transition[x, y]
+            self.estimation[relative_choice, idx] += \
+                self.alpha(acceptance_frequency - self.estimation[relative_choice, idx])
 
     # ------------------------------------------------||| COMPUTE CHOICES PROPORTIONS |||---------------------------- #
 
@@ -740,7 +620,6 @@ def simple_main():
             "tau": 0.05,  # Set the softmax parameter.
             "t_max": 10,  # Set the number of time units the simulation will run
             "stride": 1,  # by each agent at each round
-            "epsilon": 0.5,
             "vision": 5,  # Set the importance of other agents'results in
             "area": 10,  # front of an individual res
             "map_limits": {"width": 20, "height": 20},
