@@ -105,8 +105,6 @@ class Economy(object):
         self.alpha = parameters["alpha"]  # Learning coefficient
         self.temperature = parameters["tau"]  # Softmax parameter
 
-        self.idx_informers = [[] for i in range(self.n)]
-
         self.type = np.zeros(self.n, dtype=int)
         self.good = np.zeros(self.n, dtype=int)
 
@@ -206,13 +204,9 @@ class Economy(object):
 
     def reset(self):
 
-        self.finding_a_partner = np.zeros(self.n, dtype=int)
-
         for i in self.direct_exchange.keys():
             self.direct_exchange[i] = 0.
             self.indirect_exchange[i] = 0.
-
-        self.idx_informers = [[] for i in range(self.n)]
 
 
         # ---------------------------------------------||| MOVE /  MAP OPERATIONS |||------------------------------------ #
@@ -288,15 +282,16 @@ class Economy(object):
     def encounter(self, idx):
 
         occupied_nearby_positions = self.encounter_check_nearby_positions(idx)
-        self.encounter_look_for_partners(idx, occupied_nearby_positions)
-        partner_id = self.encounter_ask_for_exchange(idx)  # Main method
-        matching_list = self.look_for_partners_choices(idx)
-        
-        if matching_list:
+        group_idx = self.encounter_look_for_partners(idx, occupied_nearby_positions)
+        choice_current_agent, proportion_of_matching_choices, partner_id = \
+            self.encounter_look_for_partners_choices(idx, group_idx)
 
-            proportion_of_matching_choices = self.encounter_compute_proportion_of_matching_choices(matching_list)
-            
-       
+        self.encounter_update_estimations(idx=idx, group_idx=group_idx,
+                                          acceptance_frequency=proportion_of_matching_choices,
+                                          exchange_type=choice_current_agent)
+        if partner_id is not None:
+
+            self.encounter_proceed_to_exchange(idx, partner_id)
 
     def encounter_check_nearby_positions(self, idx):
 
@@ -323,54 +318,60 @@ class Economy(object):
 
     def encounter_look_for_partners(self, idx, positions_in_map):
 
+        idx_informers = []
         for i in positions_in_map:
             i = tuple(i)
-            self.idx_informers[idx].append(self.map_of_agents[i])
+            idx_informers[idx].append(self.map_of_agents[i])
+        return idx_informers
 
-    def encounter_look_for_partners_choices(self, idx):
+    def encounter_look_for_partners_choices(self, idx, group_idx):
        
         # The agent chooses the good he wants to obtain and asks agents around him for it  
         
         self.choose(idx)
-        choice_current_agent = list(self.abosolute_matrix[self.i_choice[idx], self.type[idx]])
+        choice_current_agent = list(self.absolute_matrix[self.i_choice[idx], self.type[idx]])
+        int_choice_current_agent = self.absolute_exchange_to_int[tuple(choice_current_agent)]
+
         matching_list = list()
         
         # We retrieve the good wanted by the others and check if their needs and our agent need match
+
+        partner_ids = []
         
-        for partner_id in self.idx_informers[idx]:
+        for partner_id in group_idx:
 
             self.choose(partner_id)
             choice_current_partner = list(self.absolute_matrix[self.i_choice[partner_id], self.type[partner_id]])
-            success = int(choice_current_partner[::-1] == choice_current_agent)
+            success = choice_current_partner[::-1] == choice_current_agent
             matching_list.append(success)
-                
-         
-                
-        return matching_list
-   
-    
-    def encounter_compute_proportion_of_matching_choices(self, matching_list):
-        
-        proportion_of_matching_choices = len([x == 1  for x in matching_list]) / len(matching_list)
-        
-        return proportion_of_matching_choices 
-    
-    
+            if success:
+                partner_ids.append(partner_id)
 
-    def encounter_update(self, idx, partner_id):
+        if partner_ids:
+
+            partner_id = np.random.choice(partner_ids)
+        else:
+            partner_id = None
+
+        proportion_of_matching_choices = np.mean(matching_list)
+        
+        return int_choice_current_agent, proportion_of_matching_choices, partner_id
+
+    def encounter_proceed_to_exchange(self, idx, partner_id):
 
         self.good[idx], self.good[partner_id] = self.good[partner_id], self.good[idx]
 
-        self.update_estimations(idx)
-        self.update_estimations(partner_id)
-
         # If they succeeded getting  their consumption good, they consume it directly.
 
-        if self.i_choice[idx] == 0 or self.i_choice[idx] == 3:
+        if self.i_choice[idx] in [0, 3]:
             self.good[idx] = self.type[idx]
 
-        if self.i_choice[partner_id] == 0 or self.i_choice[partner_id] == 3:
+        if self.i_choice[partner_id] in [0, 3]:
             self.good[partner_id] = self.type[partner_id]
+
+        for i in [idx, partner_id]:
+
+            self.decision[i] = self.i_choice[i] == 1
 
         # ----------- #
         # Saving....
@@ -378,6 +379,16 @@ class Economy(object):
 
         self.saving_map[tuple(self.position[idx])] = (self.type[idx], self.good[idx])
         self.saving_map[tuple(self.position[partner_id])] = (self.type[partner_id], self.good[partner_id])
+
+
+    def encounter_update_estimations(self, idx, group_idx, acceptance_frequency, exchange_type):
+
+        for idx in group_idx:
+
+            relative_choice = self.int_to_relative_choice[self.type[idx], exchange_type]
+
+            self.estimation[relative_choice, idx] += \
+                self.alpha(acceptance_frequency - self.estimation[relative_choice, idx])
 
     def encounter_exchange_count(self, idx, partner_id):
 
@@ -460,16 +471,6 @@ class Economy(object):
 
             self.indirect_exchange[str(self.type[idx])] += 1
 
-    # ----------------------------------------------------||| ESTIMATIONS ||| ---------------------------------------- #
-
-    def update_estimations(self, group_idx, acceptance_frequency, exchange_type):
-
-        for idx in group_idx:
-
-            relative_choice = self.int_to_relative_choice[self.type[idx], exchange_type]
-
-            self.estimation[relative_choice, idx] += \
-                self.alpha(acceptance_frequency - self.estimation[relative_choice, idx])
 
     # ------------------------------------------------||| COMPUTE CHOICES PROPORTIONS |||---------------------------- #
 
