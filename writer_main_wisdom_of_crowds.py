@@ -380,7 +380,6 @@ class Economy(object):
         self.saving_map[tuple(self.position[idx])] = (self.type[idx], self.good[idx])
         self.saving_map[tuple(self.position[partner_id])] = (self.type[partner_id], self.good[partner_id])
 
-
     def encounter_update_estimations(self, idx, group_idx, acceptance_frequency, exchange_type):
 
         for idx in group_idx:
