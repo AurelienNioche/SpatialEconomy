@@ -247,7 +247,7 @@ class Economy(object):
         self.idx_informers = [ [] for i in range(self.n) ] 
         
 
-    # --------------------------------------------------||| MOVE /  MAP OPERATIONS |||------------------------------------ #
+    # ---------------------------------------------||| MOVE /  MAP OPERATIONS |||------------------------------------ #
 
     def move(self, idx):
 
@@ -426,7 +426,7 @@ class Economy(object):
             self.exchange_matrix["2"][exchange_position] += 1
 
 
-            # ----------------------------------------------------||| CHOICE ||| ----------------------------------------------- #
+    # ----------------------------------------------------||| CHOICE ||| -------------------------------------------- #
 
     def choose(self, idx):
 
@@ -701,6 +701,7 @@ class SimulationRunner(object):
 
 
 class BackUp(object):
+
     @classmethod
     def save_data(cls, results, graphics=1):
         print("\nSaving data...")

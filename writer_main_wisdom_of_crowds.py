@@ -517,16 +517,9 @@ class Economy(object):
 
     # ----------------------------------------------------||| ESTIMATIONS ||| ---------------------------------------- #
 
-    def update_estimations(self):
+    def update_estimations(self, group_index):
 
-        self.update_estimations_success_averages()
 
-        for idx in range(self.n):
-            own_opinion = self.update_estimations_own_opinion(idx)
-            others_opinion = self.update_estimations_others_opinion(idx)
-
-            self.update_estimations_integrate(idx, own_opinion=own_opinion,
-                                              others_opinion=others_opinion)
 
     def update_estimations_success_averages(self):
 
