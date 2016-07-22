@@ -3,7 +3,7 @@ from itertools import product
 import sys, time
 import pickle
 import matplotlib.pyplot as plt
-import converter
+from module.converter import write
 from tqdm import tqdm
 from multiprocessing import Pool
 
@@ -104,7 +104,7 @@ class Economy(object):
         self.alpha = parameters["alpha"]  # Learning coefficient
         self.temperature = parameters["tau"]  # Softmax parameter
 
-        self.idx_informers = [[], ] * self.n
+        self.idx_informers = [[] for i in range(self.n)]
         self.total_received_information = np.zeros(self.n, dtype=int)
         self.epsilon = parameters["epsilon"]
 
@@ -153,7 +153,7 @@ class Economy(object):
 
         self.probability_of_choosing_option0 = np.zeros(self.n, dtype=float)
 
-        self.finding_a_partner = [[], ] * self.n
+        self.finding_a_partner = np.zeros(self.n, dtype=int)
 
         self.i_choice = np.zeros(self.n, dtype=int)
 
@@ -194,10 +194,10 @@ class Economy(object):
         # '1' means each type of exchange can be expected to be realized in only one unit of time
         # The more the value is close to zero, the more an exchange is expected to be hard.
         #
-        # self.estimation_ij[:] = np.random.random()
-        # self.estimation_ik[:] = np.random.random()
-        # self.estimation_kj[:] = np.random.random()
-        # self.estimation_ki[:] = np.random.random()
+        self.estimation_ij[:] = np.random.random()
+        self.estimation_ik[:] = np.random.random()
+        self.estimation_kj[:] = np.random.random()
+        self.estimation_ki[:] = np.random.random()
 
         self.choice_transition = np.array([
             [0, 1, 2, 3],
@@ -238,13 +238,14 @@ class Economy(object):
 
     def reset(self):
 
-        self.finding_a_partner = [[], ] * self.n
+        self.finding_a_partner = np.zeros(self.n, dtype=int)
 
         for i in self.direct_exchange.keys():
             self.direct_exchange[i] = 0.
             self.indirect_exchange[i] = 0.
 
-        self.idx_informers = [[], ] * self.n
+        self.idx_informers = [ [] for i in range(self.n) ] 
+        
 
     # --------------------------------------------------||| MOVE /  MAP OPERATIONS |||------------------------------------ #
 
@@ -323,6 +324,7 @@ class Economy(object):
         partner_id = self.encounter_ask_for_exchange(idx)  # Main method
 
         if partner_id is not None:
+            
             self.encounter_update(idx, partner_id)
 
             self.encounter_exchange_count(idx, partner_id)
@@ -373,21 +375,24 @@ class Economy(object):
 
             success = choice_current_partner[::-1] == choice_current_agent
 
-            self.finding_a_partner[idx].append(
-                (self.absolute_exchange_to_int[tuple(choice_current_agent)], success)
-            )
-            self.finding_a_partner[partner_id].append(
-                (self.absolute_exchange_to_int[tuple(choice_current_partner)], success)
-            )
-
+            self.finding_a_partner[idx], self.finding_a_partner[partner_id] = success, success
+            
+           
             if success:
                 return partner_id
+
+            self.update_estimations(idx)
+            self.update_estimations(partner_id)
 
         return None
 
     def encounter_update(self, idx, partner_id):
 
         self.good[idx], self.good[partner_id] = self.good[partner_id], self.good[idx]
+        
+        self.update_estimations(idx)
+        self.update_estimations(partner_id)
+        
 
         # If they succeeded getting  their consumption good, they consume it directly.
 
@@ -407,7 +412,7 @@ class Economy(object):
     def encounter_exchange_count(self, idx, partner_id):
 
         exchange_position = self.position[partner_id]
-
+            
         if self.good[idx] + self.good[partner_id] == 1:
 
             self.exchange_matrix["0"][exchange_position] += 1
@@ -437,7 +442,7 @@ class Economy(object):
         try:
             self.decision[idx] = \
                 self.decision_array[
-                    int(self.finding_a_partner[idx][-1][1]),  # Last element of his list of tuples (choice, success)
+                    int(self.finding_a_partner[idx]),  # Last element of his list of tuples (choice, success)
                     self.decision[idx],
                     self.choice[idx]]
         except:
@@ -512,13 +517,13 @@ class Economy(object):
 
     # ----------------------------------------------------||| ESTIMATIONS ||| ---------------------------------------- #
 
-    def update_estimations(self, id):
+    def update_estimations(self, idx):
 
         estimation_types = np.array(
-            [self.estimation_ij[id], self.estimation_ik[id], self.estimation_kj[id], self.estimation_ki[id]])
+            [self.estimation_ij[idx], self.estimation_ik[idx], self.estimation_kj[idx], self.estimation_ki[idx]])
 
-        i_type = self.type[id]
-        i_choice = self.i_choice[id]
+        i_type = self.type[idx]
+        i_choice = self.i_choice[idx]
 
         # Here, we take the type and the choice of agent i, in order to compare him with the other agents
         # and to compute his new estimation on the easiness to make the transaction he chose.
@@ -531,10 +536,11 @@ class Economy(object):
 
         # We choose here a certain number (which corresponds to the quantity of information q_information)
         # of informers among all the agents
-
-        informers = np.asarray(self.information)  # We get the agent's ids of all agent in the active agent vision,
+        
+        informers = np.asarray(self.idx_informers[idx])  # We get the agent's ids of all agent in the active agent vision,
         # then we retrieve their type, choice, and if they found a partner or not during the last trial
-
+         
+         
         agents_types = self.type[informers]
         agents_choices = self.i_choice[informers]
         agents_results = self.finding_a_partner[informers]
@@ -554,7 +560,7 @@ class Economy(object):
             else:
                 averages[j] = -1
 
-            self.total_received_information[id] += len(id0)
+            self.total_received_information[idx] += len(id0)
 
         # Here, we have computed the right type of transactions from the point of view of agent i compared with
         # the type of choices which are made by the other agents. Then, once we have identified what agents
@@ -563,7 +569,7 @@ class Economy(object):
 
         my_opinion = np.zeros(4)
 
-        my_opinion[i_choice] = self.epsilon * (self.finding_a_partner[id] - estimation_types[i_choice])
+        my_opinion[i_choice] = self.epsilon * (self.finding_a_partner[idx] - estimation_types[i_choice])
 
         others_opinion = np.zeros(4)
         for i in range(len(others_opinion)):
@@ -572,6 +578,11 @@ class Economy(object):
 
         for i in range(len(others_opinion)):
             estimation_types[i] += self.alpha * (my_opinion[i] + others_opinion[i])
+        
+        self.estimation_ij[idx] = estimation_types[0]
+        self.estimation_ik[idx] = estimation_types[1]
+        self.estimation_kj[idx] = estimation_types[2] 
+        self.estimation_ki[idx] = estimation_types[3]
 
     def choice_transition_function(self, x, y):
 
@@ -691,23 +702,34 @@ class SimulationRunner(object):
 
 class BackUp(object):
     @classmethod
-    def save_data(cls, results):
+    def save_data(cls, results, graphics=1):
         print("\nSaving data...")
 
-        matrix_list = results["matrix_list"]
-        list_map = results["list_map"]
-        exchanges_proportions_list = results["exchanges_proportions_list"]
+        date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
+
+        file = open("../data/last.txt", mode="w")
+        file.write(date)
+        file.close()
 
         # Save matrix of exchanges and positions dict (in order to print the main map later)
 
-        for i in range(len(matrix_list)):
-            converter.write(matrix_list[i], table_name="exchange_{i}".format(i=i), descr="{}/3".format(i + 1))
+        if graphics:
 
-        pickle.dump(list_map, open("./data/map.p", mode='wb'))
-        pickle.dump(exchanges_proportions_list, open("./data/exchanges.p", mode='wb'))
+            matrix_list = results["matrix_list"]
+            list_map = results["list_map"]
+        
+            for i in range(len(matrix_list)):
+
+                write(matrix_list[i], table_name="exchange_{i}".format(i=i),
+                      database_name='array_exchanges{}'.format(date), descr="{}/3".format(i+1))
+        
+            pickle.dump(list_map, open("../data/position_map{}.p".format(date), mode='wb'))
+
+        exchanges_proportions_list = results["exchanges_proportions_list"]
+        pickle.dump(exchanges_proportions_list, open("../data/exchanges{}.p".format(date), mode='wb'))
+        pickle.dump(parameters, open("../data/parameters{}.p".format(date), mode='wb'))
 
 
-#
 # def main():
 #
 #     map_limits = dict()
@@ -813,7 +835,7 @@ def simple_main():
             "workforce": np.array([10, 10, 10], dtype=int),
             "alpha": 0.5,  # Set the coefficient learning
             "tau": 0.05,  # Set the softmax parameter.
-            "t_max": 200,  # Set the number of time units the simulation will run
+            "t_max": 10,  # Set the number of time units the simulation will run
             "stride": 1,  # by each agent at each round
             "epsilon": 0.5,
             "vision": 5,  # Set the importance of other agents'results in
@@ -824,7 +846,7 @@ def simple_main():
 
     results = SimulationRunner.main_runner(parameters=parameters)
 
-    BackUp.save_data(results)
+    BackUp.save_data(results, graphics=1)
 
 
 if __name__ == "__main__":
