@@ -75,7 +75,8 @@ class Database(object):
         return table_exists
 
     def read(self, n_rows, table_name='data'):
-
+        
+              
         raw_data = self.cursor.execute("SELECT * from {}".format(table_name)).fetchall()
         n_columns = len(raw_data[0]) - 1  # Do not count ID column
         list_array = []

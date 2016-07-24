@@ -60,7 +60,7 @@ class GraphicManager(QThread):
 def main():
 
     date = open("../data/last.txt", mode='r').read()
-    parameters = pickle.load(open("../data/parameters{}.p".format(date), mode='rb'))
+    parameters = pickle.load(open("../data/parameters_{}.p".format(date), mode='rb'))
 
     map_limits = parameters["map_limits"]
 

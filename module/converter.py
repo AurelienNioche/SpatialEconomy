@@ -33,7 +33,7 @@ def read(n_rows_by_matrix, table_name='data', database_name='data'):
 
     t1 = time()
 
-    print('Time needed for reading', t1 - t0)
+    # print('Time needed for reading', t1 - t0)
 
     return data
 

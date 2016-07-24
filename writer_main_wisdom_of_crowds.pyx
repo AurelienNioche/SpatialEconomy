@@ -7,6 +7,7 @@ from module.converter import write
 from tqdm import tqdm
 from multiprocessing import Pool
 from datetime import datetime
+cimport numpy as cnp
 
 
 ############################################
@@ -49,9 +50,20 @@ from datetime import datetime
 #       to exchange type-1 good against type-3 good.
 
 
-class Economy(object):
-
-    def __init__(self, parameters):
+cdef class Economy(object):
+    
+    cdef:
+        public int vision, area, stride, n, t
+        public double alpha, temperature
+        public cnp.ndarray good, type, absolute_matrix,\
+               int_to_relative_choice, relative_to_absolute_choice, workforce, idx0, idx1,\
+               idx2, x_perimeter, y_perimeter, decision, choice, i_choice, value_ij,\
+               value_ik,value_kj, value_ki, value_option0, value_option1, estimation, exchange_matrix 
+        public object map_limits, map_of_agents, saving_map, choices_list, absolute_exchange_to_int,\
+               direct_choices_proportions, direct_exchange, indirect_exchange  
+        public list position 
+    
+    def __cinit__(self, dict parameters):
 
         self.vision = parameters["vision"]
 
@@ -214,7 +226,7 @@ class Economy(object):
         self.move_find_free_position(idx, positions_in_map)
 
     def move_check_nearby_positions(self, idx):
-
+        
         # Method used in order to find 1)free positions around current
         #  agent
         # 2)occupied positions around
@@ -255,8 +267,10 @@ class Economy(object):
 
         return positions_in_map[b_positions_in_map]
 
-    def move_find_free_position(self, idx, positions_in_map):
-
+    cdef move_find_free_position(self, int idx, cnp.ndarray positions_in_map):
+        
+       
+            
         np.random.shuffle(positions_in_map)
 
         for i in positions_in_map:
@@ -276,8 +290,14 @@ class Economy(object):
 
     # ------------------------------------------------||| MAKE ENCOUNTER |||--------------------------------------- #
 
-    def encounter(self, idx):
-
+    cdef encounter(self, int idx):
+        
+        cdef:
+            cnp.ndarray occupied_nearby_positions
+            list group_idx
+            int partner_id, choice_current_agent
+            double proportion_of_matching_choices
+        
         occupied_nearby_positions = self.encounter_check_nearby_positions(idx)
         group_idx = self.encounter_look_for_partners(occupied_nearby_positions)
          
@@ -288,7 +308,7 @@ class Economy(object):
         self.encounter_update_estimations(idx=idx, group_idx=group_idx,
                                       acceptance_frequency=proportion_of_matching_choices,
                                       exchange_type=choice_current_agent)
-        if partner_id is not None:
+        if partner_id != 999999:
 
             self.encounter_proceed_to_exchange(idx, partner_id)
 
@@ -315,16 +335,29 @@ class Economy(object):
          
         return occupied_nearby_positions
 
-    def encounter_look_for_partners(self, positions_in_map):
-
+    cdef encounter_look_for_partners(self, cnp.ndarray positions_in_map):
+        
+        cdef:
+            list idx_informers
+        
+        #-----------------------#    
+        
         idx_informers = []
         for i in positions_in_map:
             i = tuple(i)
             idx_informers.append(self.map_of_agents[i])
         return idx_informers
 
-    def encounter_look_for_partners_choices(self, idx, group_idx):
-       
+    cdef encounter_look_for_partners_choices(self, int idx, list group_idx):
+
+        cdef: 
+            list choice_current_agent, matching_list, partners_ids, \
+                 choice_current_partner
+            int int_choice_current_agent, partner_id, success
+            
+            double proportion_of_matching_choices
+            
+        
         # The agent chooses the good he wants to obtain and asks agents around him for it  
         
         self.choose(idx)
@@ -350,7 +383,8 @@ class Economy(object):
 
             partner_id = np.random.choice(partner_ids)
         else:
-            partner_id = None
+            partner_id = 999999 # Partner_id must be an int, therefore we give it an unlikely
+                                # value in case the agent doesn't have a partner
 
         proportion_of_matching_choices = np.mean(matching_list)
         
@@ -379,8 +413,12 @@ class Economy(object):
         self.saving_map[tuple(self.position[idx])] = (self.type[idx], self.good[idx])
         self.saving_map[tuple(self.position[partner_id])] = (self.type[partner_id], self.good[partner_id])
 
-    def encounter_update_estimations(self, idx, group_idx, acceptance_frequency, exchange_type):
-
+    cdef encounter_update_estimations(self, int idx, list group_idx, double acceptance_frequency, int exchange_type):
+        
+        cdef:
+            list group_in_large_sense
+            int relative_choice
+        
         group_in_large_sense = group_idx + [idx]
         for idx in group_in_large_sense:
 
@@ -407,12 +445,12 @@ class Economy(object):
 
     # ----------------------------------------------------||| CHOICE ||| -------------------------------------------- #
 
-    def choose(self, idx):
+    cdef choose(self, int idx):
 
         self.choose_update_options_values(idx)
         self.choose_decision_rule(idx)
 
-    def choose_update_options_values(self, idx):
+    cdef choose_update_options_values(self, int idx):
 
         # Each agent try to minimize the time to consume
         # That is v(option) = 1/(1/estimation)
@@ -437,7 +475,11 @@ class Economy(object):
         else:  # Avoid division by 0
             self.value_ki[idx] = 0
 
-    def choose_decision_rule(self, idx):
+    cdef choose_decision_rule(self, int idx):
+        
+        cdef:
+            double probability_of_choosing_option0, random_number
+
 
         if self.decision[idx] == 0:
             self.value_option0[idx] = self.value_ij[idx]
@@ -629,7 +671,7 @@ def simple_main():
             "workforce": np.array([35, 35, 35], dtype=int),
             "alpha": 0.4,  # Set the coefficient learning
             "tau": 0.02,  # Set the softmax parameter.
-            "t_max": 50,  # Set the number of time units the simulation will run
+            "t_max": 1200,  # Set the number of time units the simulation will run
             "stride": 1,  # by each agent at each round
             "vision": 6,  # Set the importance of other agents'results in
             "area": 10,  # front of an individual res
