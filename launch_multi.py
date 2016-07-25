@@ -1,13 +1,13 @@
 from multiprocessing import Pool
 import argparse
 import pickle
-from writer_main_wisdom_of_crowds import SimulationRunner, BackUp
+from c_writer_main_wisdom_of_crowds import SimulationRunner, BackUp
 
 
 def launch(parameters):
 
-    results = SimulationRunner.main_runner(parameters=parameters)
-    BackUp.save_data(results, parameters, graphics=0)
+    results = SimulationRunner.launch_economy(parameters=parameters, graphics=None)
+    BackUp.save_data(results, parameters, graphics=None)
 
 
 def main():

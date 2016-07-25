@@ -657,31 +657,33 @@ class Economy(object):
 
 # ---------------------------------------------||| MAIN RUNNER |||--------------------------------------------------- #
 class SimulationRunner(object):
-    @classmethod
-    def main_runner(cls, parameters):
-
-        # Create the economy to simulate
-
-        result = cls.launch_economy(parameters)
-        return result
 
     @staticmethod
-    def launch_economy(parameters):
+    def launch_economy(parameters, graphics=1):
 
         print("Producing data...")
 
         eco = Economy(parameters)
         map_limits = parameters["map_limits"]
 
-        list_saving_map = list()
-        matrix_list = [[], ] * 3
-        exchanges_proportions_list = list()
-
         # Place agents and stuff...
         eco.setup()
 
+        # -------------------- #
+        # For saving...
+        # ------------------- #
+
         # Save initial positions
-        list_saving_map.append(eco.saving_map.copy())
+        if graphics:
+            list_saving_map = list()
+            matrix_list = [[], ] * 3
+            list_saving_map.append(eco.saving_map.copy())
+
+        exchanges_proportions_list = list()
+
+        # -------------------- #
+        # Main loop
+        # ------------------- #
 
         for t in tqdm(range(parameters["t_max"])):
 
@@ -696,19 +698,20 @@ class SimulationRunner(object):
                 # -------------------- #
                 # For saving...
                 # ------------------- #
+                if graphics:
 
-                for i in range(3):
-                    # create empty matrix
-                    matrix = np.zeros((map_limits["height"], map_limits["width"]))
+                    for i in range(3):
+                        # create empty matrix
+                        matrix = np.zeros((map_limits["height"], map_limits["width"]))
 
-                    # fill the matrix with the exchanges positions
-                    matrix[:] = eco.exchange_matrix[str(i)][:]
+                        # fill the matrix with the exchanges positions
+                        matrix[:] = eco.exchange_matrix[str(i)][:]
 
-                    # For each "t" and each trial the matrix are added to a list
-                    matrix_list[i].append(matrix.copy())
+                        # For each "t" and each trial the matrix are added to a list
+                        matrix_list[i].append(matrix.copy())
 
-                # Same for graphics positions
-                list_saving_map.append(eco.saving_map.copy())
+                    # Same for graphics positions
+                    list_saving_map.append(eco.saving_map.copy())
 
                 # -----------------  #
 
