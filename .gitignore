@@ -13,3 +13,5 @@
 .idea/
 __pycache__/
 module/__pycache__/
+build/lib.macosx-10.11-x86_64-3.5/
+build/temp.macosx-10.11-x86_64-3.5/
