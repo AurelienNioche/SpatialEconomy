@@ -632,6 +632,7 @@ class SimulationRunner(object):
 
 
 class BackUp(object):
+
     @classmethod
     def save_data(cls, results, parameters, graphics=1):
         print("\nSaving data...")
