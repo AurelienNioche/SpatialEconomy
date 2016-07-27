@@ -1,11 +1,8 @@
 import numpy as np
 from itertools import product
-import sys, time
 import pickle
-import matplotlib.pyplot as plt
 from module.converter import write
 from tqdm import tqdm
-from multiprocessing import Pool
 from datetime import datetime
 cimport numpy as cnp
 
@@ -60,7 +57,7 @@ cdef class Economy(object):
                idx2, x_perimeter, y_perimeter, decision, choice, i_choice, value_ij,\
                value_ik,value_kj, value_ki, value_option0, value_option1, estimation, exchange_matrix 
         public object map_limits, map_of_agents, saving_map, choices_list, absolute_exchange_to_int,\
-               direct_choices_proportions, direct_exchange, indirect_exchange  
+               direct_choices_proportions, indirect_choices_proportions, direct_exchange, indirect_exchange
         public list position 
     
     def __cinit__(self, dict parameters):
@@ -170,6 +167,7 @@ cdef class Economy(object):
         self.t = 0
 
         self.direct_choices_proportions = {0: 0., 1: 0., 2: 0.}
+        self.indirect_choices_proportions = {0: 0., 1: 0., 2: 0.}
         self.direct_exchange = {0: 0., 1: 0., 2: 0.}
         self.indirect_exchange = {0: 0., 1: 0., 2: 0.}
 
@@ -593,7 +591,7 @@ class SimulationRunner(object):
                 # -------------------- #
                 # For saving...
                 # ------------------- #
-                if graphics:py
+                if graphics:
 
                     for i in range(3):
                         # create empty matrix
@@ -620,7 +618,7 @@ class SimulationRunner(object):
             eco.append_choices_to_compute_means()
 
             # We copy proportions and add them to a list
-            proportions = {"direct":eco.direct_choices_proportions.copy(),\
+            proportions = {"direct":eco.direct_choices_proportions.copy(),
                            "indirect":eco.indirect_choices_proportions.copy()} 
             
             direct_exchanges_proportions_list.append(proportions["direct"])
