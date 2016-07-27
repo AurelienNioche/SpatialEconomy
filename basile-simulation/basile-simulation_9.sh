@@ -32,13 +32,13 @@ pyenv local 3.5.2
 
 # useful informations to print
 echo "#############################" 
-echo "User:" $USER
+echo "User:" ${USER}
 echo "Date:" `date`
 echo "Host:" `hostname`
 echo "Directory:" `pwd`
-echo "PBS_JOBID:" $PBS_JOBID
-echo "PBS_O_WORKDIR:" $PBS_O_WORKDIR
-echo "PBS_NODEFILE: " `cat $PBS_NODEFILE | uniq`
+echo "PBS_JOBID:" ${PBS_JOBID}
+echo "PBS_O_WORKDIR:" ${PBS_O_WORKDIR}
+echo "PBS_NODEFILE: " `cat ${PBS_NODEFILE} | uniq`
 echo "#############################" 
 
 #############################
