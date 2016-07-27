@@ -68,8 +68,7 @@ class MoneyAnalysis(object):
 
         parameters, direct_exchange, indirect_exchange = self.import_data(suffix=suffix)
         money_timeline = np.zeros(parameters["t_max"])
-        money = {"0": 0, "1": 0, "2": 0}
-        no_money = 0
+        money = {0: 0, 1: 0, 2: 0, -1: 0}
         interruptions = 0 
 
         for t in range(parameters["t_max"]):
@@ -77,31 +76,23 @@ class MoneyAnalysis(object):
             money_t = self.test_for_money_state(direct_exchange=direct_exchange[t],
                                                 indirect_exchange=indirect_exchange[t])
             money_timeline[t] = money_t  
+            money[money_t] += 1
 
-            if money_t == 0:
-                money["0"] += 1
+            cond0 = money_t == -1  
+            cond1 = money_timeline[t-1] != -1
             
-            elif money_t == 1:
-                money["1"] += 1
-            
-            elif money_t == 2:
-                money["2"] += 1
-            
-            else: 
-                no_money += 1
-            
-            if money_t == -1 and money_timeline[t-1] != -1:
-                
-                interruptions += 1
+            interruptions += cond0 * cond1    
+         
 
         results = \
                 {"money" : money, 
-                 "no_money":no_money, 
                  "interruptions": interruptions, 
                  "money_timeline": money_timeline}
+        
         return results
     
-    def save_data(self, 
+    def save_data(self, results):
+        
 
 class GraphProportionChoices(object):
 
@@ -144,8 +135,9 @@ class GraphProportionChoices(object):
 def main(suffix):
 
     m = MoneyAnalysis()
-    m.analyse(suffix)
-
+    results = m.analyse(suffix)
+    m.save_data(results) 
+    
 if __name__ == "__main__":
 
     main(suffix="bhablfbrbh")
