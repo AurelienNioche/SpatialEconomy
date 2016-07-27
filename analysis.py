@@ -89,10 +89,14 @@ class MoneyAnalysis(object):
                  "interruptions": interruptions, 
                  "money_timeline": money_timeline}
         
-        return results
+        return results, suffix
     
-    def save_data(self, results):
+    def save_data(self, results, suffix):
+
+        pickle.dump(results, open("../data/results_money_test_{}.p".format(suffix), mode='wb'))
         
+
+# ------------------------------------------------||| GRAPHICS |||----------------------------------------------- #      
 
 class GraphProportionChoices(object):
 
