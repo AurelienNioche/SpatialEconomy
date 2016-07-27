@@ -103,7 +103,7 @@ def simple_main():
         
     for i in parameters_dict.keys():
         
-        pickle.dump(parameters_dict[i], open( "../data/slices_{}.p".format(i), mode="wb"))
+        pickle.dump(parameters_dict[i], open( "../data/parameters_lists/slices_{}.p".format(i), mode="wb"))
  
                         
 if __name__ == "__main__":

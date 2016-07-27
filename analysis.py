@@ -132,8 +132,11 @@ class GraphProportionChoices(object):
         # plt.suptitle('Direct choices proportion per type of agents', fontsize=14, fontweight='bold')
         # plt.legend(loc='lower left', frameon=False)
 
-        # plt.savefig("figure.pdf")
-        plt.show()
+        plt.savefig("figure_{}.pdf".format(suffix))
+        # plt.show()
+
+# ------------------------------------------------||| MAIN  |||----------------------------------------------- #   
+
 
 
 def main(suffix):
