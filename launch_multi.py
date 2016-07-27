@@ -22,9 +22,10 @@ def main():
 
     parameters_list = pickle.load(open(name=args.parameters_list_name, mode='rb'))
 
-    pool = Pool(processes=args.number_of_processes)
+    # Launch the process
 
-    pool.map(SimulationRunner.main_runner, parameters_list)
+    pool = Pool(processes=args.number_of_processes)
+    pool.map(launch, parameters_list)
 
 
 if __name__ == '__main__':
