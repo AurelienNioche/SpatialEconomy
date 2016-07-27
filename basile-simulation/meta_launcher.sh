@@ -1,12 +1,7 @@
+#!/usr/bin/env bash
 
-qsub basile-simulation_0.sh
-qsub basile-simulation_1.sh 
-qsub basile-simulation_2.sh
-qsub basile-simulation_3.sh
-qsub basile-simulation_4.sh
-qsub basile-simulation_5.sh
-qsub basile-simulation_6.sh
-qsub basile-simulation_7.sh
-qsub basile-simulation_8.sh
+for i in 0 1 2 3 4 5 6 7 8 9; do
 
-qsub basile-simulation_9.sh
+    qsub basile-simulation_${i}.sh
+
+    done

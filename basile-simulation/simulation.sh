@@ -1,8 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 #############################
-# les directives PBS vont ici:
-
 # Your job name (displayed by the queue)
 #PBS -N SimuBasile
 
@@ -18,12 +16,14 @@
 # Specify physical memory: kb for kilobytes, mb for megabytes, gb for gigabytes
 #PBS -l mem=1gb
 
-#PBS -m abe 
+#PBS -m abe
 #PBS -M basilegarcia@gmail.com
 
 # fin des directives PBS
 #############################
-			
+
+i = "0"
+
 module purge # modules cleaning
 module add torque
 pyenv local 3.5.2
@@ -31,22 +31,22 @@ pyenv local 3.5.2
 # module add gcc/4.8.2 # For cpp
 
 # useful informations to print
-echo "#############################" 
-echo "User:" $USER
+echo "#############################"
+echo "User:" ${USER}
 echo "Date:" `date`
 echo "Host:" `hostname`
 echo "Directory:" `pwd`
-echo "PBS_JOBID:" $PBS_JOBID
-echo "PBS_O_WORKDIR:" $PBS_O_WORKDIR
-echo "PBS_NODEFILE: " `cat $PBS_NODEFILE | uniq`
-echo "#############################" 
+echo "PBS_JOBID:" ${PBS_JOBID}
+echo "PBS_O_WORKDIR:" ${PBS_O_WORKDIR}
+echo "PBS_NODEFILE: " `cat ${PBS_NODEFILE} | uniq`
+echo "#############################"
 
 #############################
 
 # What you actually want to launch
 echo "Start the job"
-python Launcher_basile.py slices_4
+# launch python script with pickle object for parameters and number of processes
+python launch_multi.py slices_${i}.p 12
 
 # all done
-echo "Job finished" 
-
+echo "Job finished"
