@@ -2,6 +2,7 @@ import numpy as np
 from multiprocessing import Pool
 # from writer_main_wisdom_of_woc import SimulationRunner, BackUp
 import pickle
+from datetime import datetime 
 
 
 def simple_main():
@@ -84,7 +85,7 @@ def simple_main():
         
 
     cursor = 0
-
+    
     for i in range(nb_sub_list):
         
         part = parameters_list[cursor:cursor+sub_part]
@@ -100,10 +101,12 @@ def simple_main():
                 parameters_dict[i].append(parameters_list[cursor])       
                 cursor += 1
         
-        
+    
+    date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
+    
     for i in parameters_dict.keys():
         
-        pickle.dump(parameters_dict[i], open( "../data/slices_{}.p".format(i), mode="wb"))
+        pickle.dump(parameters_dict[i], open( "../data/parameters_lists/slices_{d}_{i}.p".format(i=i, d=date), mode="wb"))
  
                         
 if __name__ == "__main__":

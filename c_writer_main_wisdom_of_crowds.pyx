@@ -169,9 +169,9 @@ cdef class Economy(object):
 
         self.t = 0
 
-        self.direct_choices_proportions = {"0": 0., "1": 0., "2": 0.}
-        self.direct_exchange = {"0": 0., "1": 0., "2": 0.}
-        self.indirect_exchange = {"0": 0., "1": 0., "2": 0.}
+        self.direct_choices_proportions = {0: 0., 1: 0., 2: 0.}
+        self.direct_exchange = {0: 0., 1: 0., 2: 0.}
+        self.indirect_exchange = {0: 0., 1: 0., 2: 0.}
 
         # This is the initial guest (same for every agent).
         # '1' means each type of exchange can be expected to be realized in only one unit of time
@@ -506,12 +506,12 @@ cdef class Economy(object):
        
         if self.i_choice[idx] == 0:
             
-            self.direct_exchange[str(self.type[idx])] += 1
+            self.direct_exchange[self.type[idx]] += 1
 
         else:
             
              
-            self.indirect_exchange[str(self.type[idx])] += 1
+            self.indirect_exchange[self.type[idx]] += 1
 
            
 
@@ -527,11 +527,11 @@ cdef class Economy(object):
 
         for i in [0, 1, 2]:
             
-            self.direct_choices_proportions[str(i)] = \
-                self.direct_exchange[str(i)] / (self.direct_exchange[str(i)] +
-                                                self.indirect_exchange[str(i)])
+            self.direct_choices_proportions[i] = \
+                self.direct_exchange[i] / (self.direct_exchange[i] +
+                                                self.indirect_exchange[i])
                 
-            self.indirect_choices_proportions[str(i)] = 1 - self.direct_choices_proportions[str(i)]
+            self.indirect_choices_proportions[i] = 1 - self.direct_choices_proportions[i]
 
     def append_choices_to_compute_means(self):
 
@@ -593,7 +593,7 @@ class SimulationRunner(object):
                 # -------------------- #
                 # For saving...
                 # ------------------- #
-                if graphics:
+                if graphics:py
 
                     for i in range(3):
                         # create empty matrix
@@ -665,15 +665,17 @@ class BackUp(object):
                 write(matrix_list[i], table_name="exchange_{}".format(i),
                       database_name='array_exchanges{}'.format(saving_name), descr="{}/3".format(i + 1))
 
-            pickle.dump(list_map, open("../data/position_map{}.p".format(saving_name), mode='wb'))
+            pickle.dump(list_map, open("../data/positions/position_map{}.p".format(saving_name), mode='wb'))
 
         direct_exchanges = results["direct_choices"]
         indirect_exchanges = results["indirect_choices"]
         
-        pickle.dump(direct_exchanges, open("../data/direct_exchanges_{}.p".format(saving_name), mode='wb'))
-        pickle.dump(indirect_exchanges, open("../data/indirect_exchanges_{}.p".format(saving_name), mode='wb'))
+        pickle.dump(direct_exchanges, open("../data/exchanges/direct_exchanges_{}.p".format(saving_name), mode='wb'))
+        pickle.dump(indirect_exchanges, open("../data/exchanges/indirect_exchanges_{}.p".format(saving_name), mode='wb'))
 
-        pickle.dump(parameters, open("../data/parameters_{}.p".format(saving_name), mode='wb'))
+        pickle.dump(parameters, open("../data/parameters/parameters_{}.p".format(saving_name), mode='wb'))
+        
+        
 
 
 def simple_main():
