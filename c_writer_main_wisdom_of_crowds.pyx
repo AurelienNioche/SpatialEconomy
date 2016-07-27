@@ -656,13 +656,13 @@ class BackUp(object):
 
             for i in range(len(matrix_list)):
                 write(matrix_list[i], table_name="exchange_{}".format(i),
-                      database_name='array_exchanges{}'.format(date), descr="{}/3".format(i + 1))
+                      database_name='array_exchanges{}'.format(saving_name), descr="{}/3".format(i + 1))
 
-            pickle.dump(list_map, open("../data/position_map{}.p".format(date), mode='wb'))
+            pickle.dump(list_map, open("../data/position_map{}.p".format(saving_name), mode='wb'))
 
         exchanges_proportions_list = results["exchanges_proportions_list"]
-        pickle.dump(exchanges_proportions_list, open("../data/exchanges_{}.p".format(date), mode='wb'))
-        pickle.dump(parameters, open("../data/parameters_{}.p".format(date), mode='wb'))
+        pickle.dump(exchanges_proportions_list, open("../data/exchanges_{}.p".format(saving_name), mode='wb'))
+        pickle.dump(parameters, open("../data/parameters_{}.p".format(saving_name), mode='wb'))
 
 
 def simple_main():
