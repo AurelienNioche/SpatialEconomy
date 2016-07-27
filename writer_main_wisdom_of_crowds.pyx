@@ -550,17 +550,17 @@ cdef class Economy(object):
 
 class SimulationRunner(object):
     @classmethod
-    def main_runner(cls, parameters):
+    def main_runner(cls, parameters, graphics=1):
 
         # Create the economy to simulate
 
-        result = cls.launch_economy(parameters)
+        result = cls.launch_economy(parameters, graphics)
         return result
 
     @staticmethod
-    def launch_economy(parameters):
+    def launch_economy(parameters, graphics):
         
-        print(parameters["t_max"])
+       
         print("Producing data...")
 
         eco = Economy(parameters)
@@ -589,19 +589,20 @@ class SimulationRunner(object):
                 # -------------------- #
                 # For saving...
                 # ------------------- #
+                if graphics == 1:
+                    
+                    for i in range(3):
+                        # create empty matrix
+                        matrix = np.zeros((map_limits["height"], map_limits["width"]))
 
-                for i in range(3):
-                    # create empty matrix
-                    matrix = np.zeros((map_limits["height"], map_limits["width"]))
+                        # fill the matrix with the exchanges positions
+$                        matrix[:] = eco.exchange_matrix[str(i)][:]
 
-                    # fill the matrix with the exchanges positions
-                    matrix[:] = eco.exchange_matrix[str(i)][:]
+                        # For each "t" and each trial the matrix are added to a list
+                        matrix_list[i].append(matrix.copy())
 
-                    # For each "t" and each trial the matrix are added to a list
-                    matrix_list[i].append(matrix.copy())
-
-                # Same for graphics positions
-                list_saving_map.append(eco.saving_map.copy())
+                    # Same for graphics positions
+                    list_saving_map.append(eco.saving_map.copy())
 
                 # -----------------  #
 
@@ -633,7 +634,7 @@ class SimulationRunner(object):
 
 class BackUp(object):
     @classmethod
-    def save_data(cls, results, parameters, graphics=1):
+    def save_data(cls, results, parameters, graphics=0):
         print("\nSaving data...")
         
         date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
@@ -679,7 +680,7 @@ def simple_main():
 
         }
 
-    results = SimulationRunner.main_runner(parameters=parameters)
+    results = SimulationRunner.main_runner(parameters=parameters, graphics=0)
 
     BackUp.save_data(results, parameters=parameters, graphics=1)
 
