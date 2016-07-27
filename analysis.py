@@ -67,12 +67,34 @@ class MoneyAnalysis(object):
     def analyse(self, suffix):
 
         parameters, direct_exchange, indirect_exchange = self.import_data(suffix=suffix)
+        money_timeline = np.zeros(parameters["t_max"])
+        money = {"0": 0, "1": 0, "2": 0}
+        no_money = 0
+        interruptions = 0 
 
         for t in range(parameters["t_max"]):
 
-            money = self.test_for_money_state(direct_exchange=direct_exchange[t],
-                                              indirect_exchange=indirect_exchange[t])
+            money_t = self.test_for_money_state(direct_exchange=direct_exchange[t],
+                                                indirect_exchange=indirect_exchange[t])
+            money_timeline[t] = money_t  
 
+            if money_t == 0:
+                money["0"] += 1
+            
+            elif money_t == 1:
+                money["1"] += 1
+            
+            elif money_t == 2:
+                money["2"] += 1
+            
+            else: 
+                no_money += 1
+            
+            if money_t == -1 and money_timeline[t-1] != -1:
+                
+                interruptions += 1
+
+        return money, no_money, interruptions, money_timeline
 
 class GraphProportionChoices(object):
 

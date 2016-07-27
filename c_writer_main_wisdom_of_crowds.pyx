@@ -526,9 +526,12 @@ cdef class Economy(object):
         '''
 
         for i in [0, 1, 2]:
+            
             self.direct_choices_proportions[str(i)] = \
                 self.direct_exchange[str(i)] / (self.direct_exchange[str(i)] +
                                                 self.indirect_exchange[str(i)])
+                
+            self.indirect_choices_proportions[str(i)] = 1 - self.direct_choices_proportions[str(i)]
 
     def append_choices_to_compute_means(self):
 
@@ -567,8 +570,8 @@ class SimulationRunner(object):
 
         list_saving_map = list()
         matrix_list = [[], ] * 3
-        exchanges_proportions_list = list()
-
+        direct_exchanges_proportions_list = list()
+        indirect_exchanges_proportions_list= list()
         # Place agents and stuff...
         eco.setup()
 
@@ -617,15 +620,19 @@ class SimulationRunner(object):
             eco.append_choices_to_compute_means()
 
             # We copy proportions and add them to a list
-            proportions = eco.direct_choices_proportions.copy()
-            exchanges_proportions_list.append(proportions)
+            proportions = {"direct":eco.direct_choices_proportions.copy(),\
+                           "indirect":eco.indirect_choices_proportions.copy()} 
+            
+            direct_exchanges_proportions_list.append(proportions["direct"])
+            indirect_exchanges_proportions_list.append(proportions["indirect"])
 
         # Finally we compute the direct choices mean for each type
         # of agent and return it as well as the direct choices proportions
 
         list_mean = eco.compute_choices_means()
 
-        result = {"exchanges_proportions_list": exchanges_proportions_list,
+        result = {"direct_choices": direct_exchanges_proportions_list,
+                  "indirect_choices": indirect_exchanges_proportions_list,
                   "list_mean": list_mean,
                   "matrix_list": matrix_list,
                   "list_map": list_saving_map}
@@ -660,8 +667,12 @@ class BackUp(object):
 
             pickle.dump(list_map, open("../data/position_map{}.p".format(saving_name), mode='wb'))
 
-        exchanges_proportions_list = results["exchanges_proportions_list"]
-        pickle.dump(exchanges_proportions_list, open("../data/exchanges_{}.p".format(saving_name), mode='wb'))
+        direct_exchanges = results["direct_choices"]
+        indirect_exchanges = results["indirect_choices"]
+        
+        pickle.dump(direct_exchanges, open("../data/direct_exchanges_{}.p".format(saving_name), mode='wb'))
+        pickle.dump(indirect_exchanges, open("../data/indirect_exchanges_{}.p".format(saving_name), mode='wb'))
+
         pickle.dump(parameters, open("../data/parameters_{}.p".format(saving_name), mode='wb'))
 
 
