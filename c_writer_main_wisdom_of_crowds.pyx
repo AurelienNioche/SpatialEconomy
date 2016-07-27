@@ -550,17 +550,16 @@ cdef class Economy(object):
 
 class SimulationRunner(object):
     @classmethod
-    def main_runner(cls, parameters):
+    def main_runner(cls, parameters, graphics=1):
 
         # Create the economy to simulate
 
-        result = cls.launch_economy(parameters)
+        result = cls.launch_economy(parameters, graphics)
         return result
 
     @staticmethod
     def launch_economy(parameters, graphics=1):
-        
-        print(parameters["t_max"])
+       
         print("Producing data...")
 
         eco = Economy(parameters)
@@ -591,7 +590,6 @@ class SimulationRunner(object):
                 # -------------------- #
                 # For saving...
                 # ------------------- #
-
                 if graphics:
 
                     for i in range(3):
@@ -686,7 +684,7 @@ def simple_main():
 
         }
 
-    results = SimulationRunner.main_runner(parameters=parameters)
+    results = SimulationRunner.main_runner(parameters=parameters, graphics=0)
 
     BackUp.save_data(results, parameters=parameters, graphics=1)
 
