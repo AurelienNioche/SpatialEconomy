@@ -25,7 +25,7 @@ class GraphicManager(QThread):
         date = open("../data/last.txt", mode='r').read()
         position_map = pickle.load(open("../data/position_map{}.p".format(date), mode='rb'))
         
-        matrix_list = { "0": list(), "1": list(), "2": list() }
+        matrix_list = {"0": list(), "1": list(), "2": list()}
         
         for i in range(len(matrix_list)):
             
