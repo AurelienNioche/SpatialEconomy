@@ -94,7 +94,14 @@ class MoneyAnalysis(object):
                 
                 interruptions += 1
 
-        return money, no_money, interruptions, money_timeline
+        results = \
+                {"money" : money, 
+                 "no_money":no_money, 
+                 "interruptions": interruptions, 
+                 "money_timeline": money_timeline}
+        return results
+    
+    def save_data(self, 
 
 class GraphProportionChoices(object):
 
