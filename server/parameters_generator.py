@@ -1,6 +1,4 @@
 import numpy as np
-from multiprocessing import Pool
-# from writer_main_wisdom_of_woc import SimulationRunner, BackUp
 import pickle
 from datetime import datetime 
 
@@ -107,7 +105,7 @@ class ParametersGenerator(object):
 
         for i in parameters_dict.keys():
             pickle.dump(parameters_dict[i],
-                        open("../data/parameters_lists/slices_{d}_{i}.p".format(i=i, d=date), mode="wb"))
+                        open("../../data/parameters_lists/slices_{d}_{i}.p".format(i=i, d=date), mode="wb"))
 
     def run(self):
 
