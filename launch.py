@@ -3,16 +3,15 @@ from writer_main_wisdom_of_crowds import SimulationRunner, BackUp
 from multiprocessing import Pool
 
 
-
 def simple_main():
 
     '''
     Simplest program use
     :return: None
     '''
-    parameters = list()
+    parameters_list = list()
 
-    for vision in [5,20]: 
+    for vision in [5, 20]:
         parameters = \
             {
                 "workforce": np.array([10, 10, 10], dtype=int),
