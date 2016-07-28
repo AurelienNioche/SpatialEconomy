@@ -56,7 +56,6 @@ def simple_main():
                     
                     for area in area_list:                        
                         
-                        idx += 1
                         parameters = \
                             {
                                 "workforce": np.array(workforce, dtype=int),
@@ -73,7 +72,7 @@ def simple_main():
 
                             }
                         
-                    
+                        idx += 1
                         parameters_list.append(parameters)
     
     
