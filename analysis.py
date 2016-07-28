@@ -1,8 +1,5 @@
-import matplotlib.pyplot as plt 
 import numpy as np
-import pickle
-from tqdm import tqdm
-from module.save import BackUp
+from save.save_db_dic import BackUp
 from collections import OrderedDict
 
 
@@ -57,7 +54,7 @@ class MoneyAnalysis(object):
 
     def analyse(self, suffix):
 
-        parameters, direct_exchange, indirect_exchange = self.import_data(suffix=suffix)
+        parameters, direct_exchange, indirect_exchange = import_data(suffix=suffix)
         money_timeline = np.zeros(parameters["t_max"])
         money = {0: 0, 1: 0, 2: 0, -1: 0}
         interruptions = 0 

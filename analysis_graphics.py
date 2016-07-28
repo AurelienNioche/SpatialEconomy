@@ -1,5 +1,6 @@
 from pylab import plt, np
-from module.import_data import import_data
+
+from save.import_data import import_data
 
 
 class GraphProportionChoices(object):
