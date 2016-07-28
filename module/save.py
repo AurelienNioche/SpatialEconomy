@@ -221,7 +221,9 @@ class BackUp(object):
 if __name__ == '__main__':
 
     back_up = BackUp()
-    list_dictionary = [{"variables": [3, 4], "mean_error": 3.}, {"variables": [4, 1], "mean_error": 4.}]
+    # It's better to use OrderedDict, because it keeps the order of keys.
+    list_dictionary = [OrderedDict([("variables", [3, 4]), ("mean_error", 3.)]),
+                       OrderedDict([("variables", [2, 5]), ("mean_error", 5.)])]
     back_up.save(list_dictionary)
 
 
