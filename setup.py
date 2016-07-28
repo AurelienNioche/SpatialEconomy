@@ -1,8 +1,5 @@
-# from distutils.core import setup
-# from distutils.extension import Extension
 from setuptools import setup, Extension
 from Cython.Build import cythonize
-from Cython.Distutils import build_ext
 import numpy as np
 
 extensions = [ 
@@ -12,5 +9,5 @@ extensions = [
 
 setup(
     name="c_writer_main_wisdom_of_crowds",
-    ext_modules = cythonize(extensions),
+    ext_modules=cythonize(extensions), install_requires=['numpy']
 )
