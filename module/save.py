@@ -23,7 +23,9 @@ class Database(object):
 
     def __del__(self):
 
-        self.close()
+        # Save modifications and close connexion.
+        self.connexion.commit()
+        self.connexion.close()
 
     def create_directory(self):
 
@@ -149,12 +151,6 @@ class Database(object):
 
         return content
 
-    def close(self):
-
-        # Save modifications and close connexion.
-        self.connexion.commit()
-        self.connexion.close()
-
     def empty(self, table_name):
 
         q = "DELETE from `{}`".format(table_name)
@@ -197,8 +193,6 @@ class Database(object):
         return self.read(query=query)
 
 
-
-
 class BackUp(object):
 
     def __init__(self, database_name='results', table_name='data'):
@@ -224,62 +218,11 @@ class BackUp(object):
         print("BackUp: Data saved.")
 
 
-class Cursor(object):
-    """
-    During computation, Cursor object serves to keep a trace of where the program stops
-    (i.e. when the program go thought a keyboard interrupt).
-    """
-
-    def __init__(self):
-
-        self.position = 0
-        self.folder = "../../tmp"
-        self.input_file = "{}/cursor.txt".format(self.folder)
-
-    def retrieve_position(self):
-
-        if path.exists(self.input_file):
-
-            f = open(self.input_file, 'r')
-            f_content = f.read()
-            f.close()
-
-            if f_content == '':
-
-                self.position = 0
-            else:
-
-                try:
-                    self.position = int(f_content)
-
-                except:
-
-                    self.position = 0
-        else:
-            if not path.exists(self.folder):
-                mkdir(self.folder)
-            self.position = 0
-
-    def save_position(self):
-
-        f = open(self.input_file, "w")
-        f.write(str(self.position))
-        f.close()
-
-    def reset(self):
-
-        f = open(self.input_file, "w")
-        f.write(str(0))
-        f.close()
-
-        self.position = 0
-
-
 if __name__ == '__main__':
 
     back_up = BackUp()
-    d = [{"variables": [3, 4], "mean_error": 3.}, {"variables": [4, 1], "mean_error": 4.}]
-    back_up.save(d)
+    list_dictionary = [{"variables": [3, 4], "mean_error": 3.}, {"variables": [4, 1], "mean_error": 4.}]
+    back_up.save(list_dictionary)
 
 
 
