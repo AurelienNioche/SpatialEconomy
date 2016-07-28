@@ -138,6 +138,16 @@ class ParametersGenerator(object):
             f = open("{}{}.sh".format(prefix_output_file, i), 'w')
             f.write(replaced)
             f.close()
+
+    def create_meta_launcher(self):
+
+        content = "# !/usr/bin/env bash\n" \
+                  "for i in {0..%d}; do\nqsub basile-simulation_${i}.sh \ndone" % (self.nb_sub_list - 1)
+
+        directory = "../../data/session/"
+        f = open("{}meta_launcher.sh".format(directory), 'w')
+        f.write(content)
+        f.close()
     
     def run(self):
 
@@ -151,6 +161,7 @@ class ParametersGenerator(object):
 
         self.create_scripts()
 
+        self.create_meta_launcher()
 
 def main():
 

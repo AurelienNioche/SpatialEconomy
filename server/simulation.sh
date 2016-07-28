@@ -5,10 +5,10 @@
 #PBS -N SimuBasile
 
 # Specify the working directory
-#PBS -d ../basile/SpatialEconomy/
+#PBS -d ../../SpatialEconomy/
 
 # walltime (hh:mm::ss)
-#PBS -l walltime=06:00:00
+#PBS -l walltime=02:00:00
 
 # Specify the number of nodes(nodes=) and the number of cores per nodes(ppn=) to be used
 #PBS -l nodes=1:ppn=6
