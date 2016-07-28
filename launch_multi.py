@@ -7,7 +7,7 @@ from save.save_eco import BackUp
 
 def launch(parameters):
 
-    results = SimulationRunner.launch_economy(parameters=parameters, graphics=None)
+    results = SimulationRunner.multi_launch_economy(parameters)
     BackUp.save_data(results, parameters, graphics=None)
 
 
@@ -21,7 +21,7 @@ def main():
 
     args = parser.parse_args()
 
-    parameters_list = pickle.load(open(name=args.parameters_list_name, mode='rb'))
+    parameters_list = pickle.load(open(args.parameters_list_name, mode='rb'))
 
     # Launch the process
 
