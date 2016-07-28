@@ -46,7 +46,7 @@ echo "#############################"
 # What you actually want to launch
 echo "Start the job"
 # launch python script with pickle object for parameters and number of processes
-python launch_multi.py slices_${i}.p 12
+python launch_multi.py ../data/parameters_lists/slice_${i}.p 12
 
 # all done
 echo "Job finished"
