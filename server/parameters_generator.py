@@ -1,7 +1,7 @@
 import numpy as np
 import pickle
 from datetime import datetime 
-from os import path 
+from os import path, mkdir 
 
 class ParametersGenerator(object):
 
