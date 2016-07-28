@@ -1,5 +1,6 @@
 import numpy as np
 from save.save_db_dic import BackUp
+from save.import_data import import_data, import_suffixes
 from collections import OrderedDict
 
 
@@ -66,18 +67,27 @@ class MoneyAnalysis(object):
             money_timeline[t] = money_t  
             money[money_t] += 1
 
-            cond0 = money_t == -1  
-            cond1 = money_timeline[t-1] != -1
-            
-            interruptions += cond0 * cond1    
-         
+            if t > 0:
+
+                cond0 = money_t == -1
+                cond1 = money_timeline[t-1] != -1
+                interruptions += cond0 * cond1
 
         results = \
-                {"money" : money, 
-                 "interruptions": interruptions, 
-                 "money_timeline": money_timeline}
+            {"money": money,
+             "interruptions": interruptions,
+             "money_timeline": money_timeline}
+
+        data_to_save = OrderedDict([
+            ('a0', parameters["workforce"][0]),
+            ('a1', parameters["workforce"][1]),
+            ('a2', parameters["workforce"][2]),
+            ('alpha', parameters["alpha"]),
+            ('tau', parameters["tau"]),
+            ('t_max', parameters["t_max"]),
+            ('map_size', parameters["map_limits"]["width"]*parameters["map_limits"]["height"])])
         
-        return suffix, results, parameters
+        return data_to_save
 
 
 # ------------------------------------------------||| Data Saver |||----------------------------------------------- #   
@@ -88,17 +98,28 @@ class DataSaver(object):
         pass
 
     @classmethod    
-    def save_data(self, suffix, results, parameters):
-        
+    def save_data(cls, session):
+
+        money_analysis = MoneyAnalysis()
+
+        data = []
+        suffixes = import_suffixes(session)
+
+        for suffix in suffixes:
+
+            result = money_analysis.analyse(suffix=suffix)
+
+            data.append(result)
+
+        cls.write(data)
+
+    @classmethod
+    def write(cls, data):
+
         backup = BackUp()
-        
-        data_to_save = OrderedDict( ('a0', parameters["workforce"][0]),
-                                    ('a1', parameters["workforce"][1]),
-                                    ('a2', parameters["workforce"][2]),
-                                    ('alpha', parameters["alpha"]),
-                                    ('tau', parameters["tau"]),
-                                    ('t_max',parameters["t_max"]),
-                                    ('map_size', parameters["t_max"]))
+        backup.save(data)
+
+
                                     
                                     
         

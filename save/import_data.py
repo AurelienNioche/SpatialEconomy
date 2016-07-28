@@ -10,3 +10,10 @@ def import_data(suffix):
     indirect_exchange = pickle.load(open("../data/exchanges/ indirect_exchanges_{}.p".format(suffix), mode="rb"))
 
     return parameters, direct_exchange, indirect_exchange
+
+
+def import_suffixes(session):
+
+    suffixes = pickle.load(open("../data/sessions/suffixes_{}.p".format(session), mode="rb"))
+    return suffixes
+
