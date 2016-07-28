@@ -62,9 +62,9 @@ cdef class Economy(object):
     
     def __cinit__(self, dict parameters):
 
-        self.vision = parameters["vision"]
+        self.vision = parameters["vision"]/2
 
-        self.area = parameters["area"]
+        self.area = parameters["area"]/2
         self.stride = parameters["stride"]
 
         self.map_limits = parameters["map_limits"]
