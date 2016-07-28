@@ -303,7 +303,7 @@ cdef class Economy(object):
         self.encounter_update_estimations(idx=idx, group_idx=group_idx,
                                       acceptance_frequency=proportion_of_matching_choices,
                                       exchange_type=choice_current_agent)
-        if partner_id != 999999:
+        if partner_id != -1:
 
             self.encounter_proceed_to_exchange(idx, partner_id)
 
@@ -378,7 +378,7 @@ cdef class Economy(object):
 
             partner_id = np.random.choice(partner_ids)
         else:
-            partner_id = 999999 # Partner_id must be an int, therefore we give it an unlikely
+            partner_id = -1 # Partner_id must be an int, therefore we give it an unlikely
                                 # value in case the agent doesn't have a partner
 
         proportion_of_matching_choices = np.mean(matching_list)
@@ -503,13 +503,9 @@ cdef class Economy(object):
             
             self.direct_exchange[self.type[idx]] += 1
 
-        else:
-            
-             
+        elif self.i_choice[idx] in [1, 2]:
+
             self.indirect_exchange[self.type[idx]] += 1
-
-           
-
 
     # ------------------------------------------------||| COMPUTE CHOICES PROPORTIONS |||---------------------------- #
 
