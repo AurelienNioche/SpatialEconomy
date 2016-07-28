@@ -1,7 +1,7 @@
 import numpy as np
 import pickle
 from datetime import datetime 
-
+from os import path 
 
 class ParametersGenerator(object):
 
@@ -20,6 +20,8 @@ class ParametersGenerator(object):
         self.workforce_step = 5
         self.workforce_mini = 50
         self.workforce_maxi = 70
+    
+        self.date =  str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
 
     def generate_workforce_list(self):
 
@@ -41,6 +43,7 @@ class ParametersGenerator(object):
 
         idx = 0
         parameters_list = []
+        suffixes_list = [] 
 
         for workforce in workforce_list:
 
@@ -63,21 +66,23 @@ class ParametersGenerator(object):
                                     # front of an indivual res
                                     "area": area,  # set the perimeter within each agent can move
                                     "map_limits": {"width": self.width, "height": self.height},
-                                    "idx": idx
+                                    "idx": idx,
+                                    "date": self.date
 
                                 }
 
                             idx += 1
                             parameters_list.append(parameters)
+                            suffixes_list.append("{date}_{idx}".format(date=self.date, idx=idx))
 
-        return parameters_list
+        return parameters_list, suffixes_list
 
     @classmethod
     def generate_parameters_dict(cls, parameters_list):
 
         parameters_dict = {}
 
-        nb_sub_list = 10
+        nb_sub_list = 100
         sub_part = int(len(parameters_list) / 10)
 
         cursor = 0
@@ -98,24 +103,29 @@ class ParametersGenerator(object):
 
         return parameters_dict
 
-    @classmethod
-    def save_parameters_dict(cls, parameters_dict):
+    def save_parameters_dict(self, parameters_dict, suffixes_list):
 
-        date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
-
+        folders = ["../../data/parameters_lists/", "../../data/session/"]
+        
+        for i in folders:
+            if not path.exists(i):
+                mkdir(i)
+        
         for i in parameters_dict.keys():
             pickle.dump(parameters_dict[i],
-                        open("../../data/parameters_lists/slices_{d}_{i}.p".format(i=i, d=date), mode="wb"))
+                        open("../../data/parameters_lists/slice_{d}_{i}.p".format(i=i, d=self.date), mode="wb"))
 
+        pickle.dump(suffixes_list,  open("../../data/session/sessions_{}.p".format(self.date), mode="wb"))
+    
     def run(self):
 
         workforce_list = self.generate_workforce_list()
 
-        parameters_list = self.generate_parameters_list(workforce_list=workforce_list)
+        parameters_list, suffixes_list = self.generate_parameters_list(workforce_list=workforce_list)
 
         parameters_dict = self.generate_parameters_dict(parameters_list)
 
-        self.save_parameters_dict(parameters_dict)
+        self.save_parameters_dict(parameters_dict, suffixes_list)
 
 
 def main():

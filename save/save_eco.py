@@ -1,5 +1,4 @@
 from save.converter import write
-from datetime import datetime
 from pickle import dump
 from tqdm import tqdm_gui
 from os import path, mkdir
@@ -14,8 +13,7 @@ class BackUp(object):
 
         tqdm_gui.write("\nSaving data...")
 
-        date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
-        saving_name = "{date}_idx{idx}".format(date=date, idx=parameters["idx"])
+        saving_name = "{date}_idx{idx}".format(date=parameters["date"], idx=parameters["idx"])
 
         if graphics:
 
