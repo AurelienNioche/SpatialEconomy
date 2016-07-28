@@ -1,7 +1,8 @@
 import numpy as np
 import pickle
 from datetime import datetime 
-from os import path, mkdir 
+from os import path, mkdir
+import re
 
 class ParametersGenerator(object):
 
@@ -22,6 +23,8 @@ class ParametersGenerator(object):
         self.workforce_maxi = 70
     
         self.date =  str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
+
+        self.nb_sub_list = 100
 
     def generate_workforce_list(self):
 
@@ -77,17 +80,15 @@ class ParametersGenerator(object):
 
         return parameters_list, suffixes_list
 
-    @classmethod
-    def generate_parameters_dict(cls, parameters_list):
+    def generate_parameters_dict(self, parameters_list):
 
         parameters_dict = {}
 
-        nb_sub_list = 100
         sub_part = int(len(parameters_list) / 10)
 
         cursor = 0
 
-        for i in range(nb_sub_list):
+        for i in range(self.nb_sub_list):
 
             part = parameters_list[cursor:cursor + sub_part]
             parameters_dict[i] = part
@@ -95,7 +96,7 @@ class ParametersGenerator(object):
 
         while cursor < len(parameters_list):
 
-            for i in range(nb_sub_list):
+            for i in range(self.nb_sub_list):
 
                 if cursor < len(parameters_list):
                     parameters_dict[i].append(parameters_list[cursor])
@@ -115,7 +116,28 @@ class ParametersGenerator(object):
             pickle.dump(parameters_dict[i],
                         open("../../data/parameters_lists/slice_{}.p".format(i), mode="wb"))
 
-        pickle.dump(suffixes_list,  open("../../data/session/sessions_{}.p".format(self.date), mode="wb"))
+        pickle.dump(suffixes_list,  open("../../data/session/session_{}.p".format(self.date), mode="wb"))
+
+    def create_scripts(self):
+
+        directory = "../../data/session/"
+        root_file = "simulation.sh"
+        prefix_output_file = "{}basile-simulation_".format(directory)
+
+        if not path.exists(directory):
+            mkdir(directory)
+
+        for i in range(self.nb_sub_list):
+            f = open(root_file, 'r')
+            content = f.read()
+            f.close()
+
+            replaced = re.sub('i = "0"', 'i = "{}"'.format(i), content)
+            replaced = re.sub('SimuBasile', 'SimuBasile{}'.format(i), replaced)
+
+            f = open("{}{}.sh".format(prefix_output_file, i), 'w')
+            f.write(replaced)
+            f.close()
     
     def run(self):
 
@@ -126,6 +148,8 @@ class ParametersGenerator(object):
         parameters_dict = self.generate_parameters_dict(parameters_list)
 
         self.save_parameters_dict(parameters_dict, suffixes_list)
+
+        self.create_scripts()
 
 
 def main():
