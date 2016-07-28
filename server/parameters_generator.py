@@ -113,7 +113,7 @@ class ParametersGenerator(object):
         
         for i in parameters_dict.keys():
             pickle.dump(parameters_dict[i],
-                        open("../../data/parameters_lists/slice_{d}_{i}.p".format(i=i, d=self.date), mode="wb"))
+                        open("../../data/parameters_lists/slice_{}.p".format(i), mode="wb"))
 
         pickle.dump(suffixes_list,  open("../../data/session/sessions_{}.p".format(self.date), mode="wb"))
     
