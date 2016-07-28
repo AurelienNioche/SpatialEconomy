@@ -1,7 +1,7 @@
 from multiprocessing import Pool
 import argparse
 import pickle
-from c_economy import SimulationRunner, BackUp
+from cython_files.cython_economy import SimulationRunner, BackUp
 
 
 def launch(parameters):
