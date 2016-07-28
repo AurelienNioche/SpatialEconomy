@@ -529,12 +529,14 @@ cdef class Economy(object):
                 self.direct_exchange[i] / (self.direct_exchange[i] +
                                                 self.indirect_exchange[i])
                 
-            self.indirect_choices_proportions[i] = 1 - self.direct_choices_proportions[i]
+            self.indirect_choices_proportions[i] = \
+               self.indirect_exchange[i] / (self.direct_exchange[i] +
+                                                self.indirect_exchange[i])
 
     def append_choices_to_compute_means(self):
 
         for i in [0, 1, 2]:
-            self.choices_list[str(i)].append(self.direct_choices_proportions[str(i)])
+            self.choices_list[str(i)].append(self.direct_choices_proportions[i])
 
     def compute_choices_means(self):
 
