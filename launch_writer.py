@@ -24,7 +24,7 @@ def simple_main():
 
         }
 
-    results = SimulationRunner.main_runner(parameters=parameters)
+    results = SimulationRunner.launch_economy(parameters=parameters, graphics=0)
 
     BackUp.save_data(results, parameters, graphics=1)
 

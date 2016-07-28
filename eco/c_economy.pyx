@@ -545,13 +545,6 @@ cdef class Economy(object):
 
 
 class SimulationRunner(object):
-    @classmethod
-    def main_runner(cls, parameters, graphics=1):
-
-        # Create the economy to simulate
-
-        result = cls.launch_economy(parameters, graphics)
-        return result
 
     @staticmethod
     def launch_economy(parameters, graphics=1):
@@ -634,3 +627,44 @@ class SimulationRunner(object):
 
         return result
 
+    @staticmethod
+    def multi_launch_economy(parameters):
+
+        eco = Economy(parameters)
+        map_limits = parameters["map_limits"]
+
+        direct_exchanges_proportions_list = list()
+        indirect_exchanges_proportions_list= list()
+        # Place agents and stuff...
+        eco.setup()
+
+        for t in range(parameters["t_max"]):
+
+            eco.reset()
+
+            for idx in range(eco.n):
+
+                # move agent, then make them proceeding to exchange
+                eco.move(idx)
+                eco.encounter(idx)
+
+            # ---------- #
+            # Do some stats...
+
+            # for each "t" we compute the proportion of direct choices
+            eco.compute_choices_proportions()
+
+            # We append it to a list (in the fonction)
+            eco.append_choices_to_compute_means()
+
+            # We copy proportions and add them to a list
+            proportions = {"direct":eco.direct_choices_proportions.copy(),
+                           "indirect":eco.indirect_choices_proportions.copy()}
+
+            direct_exchanges_proportions_list.append(proportions["direct"])
+            indirect_exchanges_proportions_list.append(proportions["indirect"])
+
+        result = {"direct_choices": direct_exchanges_proportions_list,
+                  "indirect_choices": indirect_exchanges_proportions_list}
+
+        return result
