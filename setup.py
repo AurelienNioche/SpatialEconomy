@@ -3,7 +3,6 @@
  
 from setuptools import setup, Extension
 from Cython.Build import cythonize
-from Cython.Distutils import build_ext
 import numpy as np
 
 extensions = [ 
