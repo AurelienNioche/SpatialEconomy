@@ -1,5 +1,7 @@
+import matplotlib.pyplot as plt 
 import numpy as np
-from module.import_data import import_data
+import pickle
+from tqdm import tqdm
 
 
 # ------------------------------------------------||| MONEY TEST |||----------------------------------------------- #
@@ -51,9 +53,20 @@ class MoneyAnalysis(object):
 
         return money
 
+   #  @classmethod
+    # def import_data(cls, suffix):
+
+        # parameters = pickle.load(open("../data/parameters/parameters_{}.p".format(suffix), mode="rb"))
+        # print(parameters)
+
+        # direct_exchange = pickle.load(open("../data/exchanges/direct_exchanges_{}.p".format(suffix), mode="rb"))
+        # indirect_exchange = pickle.load(open("../data/exchanges/ indirect_exchanges_{}.p".format(suffix), mode="rb"))
+
+        # return parameters, direct_exchange, indirect_exchange
+
     def analyse(self, suffix):
 
-        parameters, direct_exchange, indirect_exchange = import_data(suffix=suffix)
+        parameters, direct_exchange, indirect_exchange = self.import_data(suffix=suffix)
         money_timeline = np.zeros(parameters["t_max"])
         money = {0: 0, 1: 0, 2: 0, -1: 0}
         interruptions = 0 
@@ -77,24 +90,21 @@ class MoneyAnalysis(object):
                  "money_timeline": money_timeline}
         
         return results, suffix
-
-
-class Master(object):
     
-    def save_data(self, results):
+    def save_data(self, results, suffix):
 
-        # pickle.dump(results, open("../data/results_money_test_{}.p".format(suffix), mode='wb'))
-        pass
+        pickle.dump(results, open("../data/results_money_test_{}.p".format(suffix), mode='wb'))
         
 
 # ------------------------------------------------||| MAIN  |||----------------------------------------------- #   
+
 
 
 def main(suffix):
 
     m = MoneyAnalysis()
     results = m.analyse(suffix)
-    # m.save_data(results)
+    m.save_data(results) 
     
 if __name__ == "__main__":
 
