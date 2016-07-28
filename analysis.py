@@ -73,11 +73,6 @@ class MoneyAnalysis(object):
                 cond1 = money_timeline[t-1] != -1
                 interruptions += cond0 * cond1
 
-        results = \
-            {"money": money,
-             "interruptions": interruptions,
-             "money_timeline": money_timeline}
-
         data_to_save = OrderedDict([
             ('a0', parameters["workforce"][0]),
             ('a1', parameters["workforce"][1]),
@@ -85,7 +80,14 @@ class MoneyAnalysis(object):
             ('alpha', parameters["alpha"]),
             ('tau', parameters["tau"]),
             ('t_max', parameters["t_max"]),
-            ('map_size', parameters["map_limits"]["width"]*parameters["map_limits"]["height"])])
+            ('area_map', parameters["map_limits"]["width"]*parameters["map_limits"]["height"]),
+            ('area_move', parameters["area"]),
+            ('area_vision', parameters["vision"]),
+            ('m0', money[0]),
+            ('m1', money[1]),
+            ('m2', money[2]),
+            ('interruptions', interruptions)
+        ])
         
         return data_to_save
 
