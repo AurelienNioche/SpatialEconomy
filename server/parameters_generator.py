@@ -141,8 +141,8 @@ class ParametersGenerator(object):
 
     def create_meta_launcher(self):
 
-        content = "# !/usr/bin/env bash\nlet 'begin=0'\nlet 'end=%d'" \
-                  "\nfor i in {${begin}..${end}; do\nqsub basile-simulation_${i}.sh \ndone" % self.nb_sub_list
+        content = "# !/usr/bin/env bash\n" \
+                  "for i in {0..%d}; do\nqsub basile-simulation_${i}.sh \ndone" % (self.nb_sub_list - 1)
 
         directory = "../../data/session/"
         f = open("{}meta_launcher.sh".format(directory), 'w')
