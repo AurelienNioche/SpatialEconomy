@@ -1,5 +1,5 @@
 import numpy as np
-from writer_main_wisdom_of_crowds import SimulationRunner, BackUp
+from cython_files.cython_economy import SimulationRunner, BackUp
 from multiprocessing import Pool
 
 

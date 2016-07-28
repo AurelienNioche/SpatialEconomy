@@ -53,16 +53,16 @@ class MoneyAnalysis(object):
 
         return money
 
-    @classmethod
-    def import_data(cls, suffix):
+   #  @classmethod
+    # def import_data(cls, suffix):
 
-        parameters = pickle.load(open("../data/parameters/parameters_{}.p".format(suffix), mode="rb"))
-        print(parameters)
+        # parameters = pickle.load(open("../data/parameters/parameters_{}.p".format(suffix), mode="rb"))
+        # print(parameters)
 
-        direct_exchange = pickle.load(open("../data/exchanges/direct_exchanges_{}.p".format(suffix), mode="rb"))
-        indirect_exchange = pickle.load(open("../data/exchanges/ indirect_exchanges_{}.p".format(suffix), mode="rb"))
+        # direct_exchange = pickle.load(open("../data/exchanges/direct_exchanges_{}.p".format(suffix), mode="rb"))
+        # indirect_exchange = pickle.load(open("../data/exchanges/ indirect_exchanges_{}.p".format(suffix), mode="rb"))
 
-        return parameters, direct_exchange, indirect_exchange
+        # return parameters, direct_exchange, indirect_exchange
 
     def analyse(self, suffix):
 
@@ -95,74 +95,6 @@ class MoneyAnalysis(object):
 
         pickle.dump(results, open("../data/results_money_test_{}.p".format(suffix), mode='wb'))
         
-
-# ------------------------------------------------||| GRAPHICS |||----------------------------------------------- #      
-
-class GraphProportionChoices(object):
-
-    def __init__(self):
-
-        pass
-
-    @classmethod
-    def plot(cls, suffix, multi=1):
-        
-        parameters = pickle.load(open("../data/parameters/parameters_{}.p".format(suffix), mode="rb"))
-        print(parameters)
-
-        data = pickle.load(open("../data/exchanges/direct_exchanges_{}.p".format(suffix), mode="rb"))
-        
-        if multi:
-            
-            nb_list = len(data)
-            t_max = len(data[0])
-
-            agents_proportions = np.zeros((t_max, 3))
-            
-            for i in range(nb_list):
-                
-                for k in range(t_max):
-
-                    for j in range(3):
-                        agents_proportions[k, j] = data[i][k][j]
-
-                color_set = ["green", "blue", "red"]
-
-                for agent_type in range(3):
-                    plt.plot(np.arange(t_max), agents_proportions[:, agent_type],
-                             color=color_set[agent_type], linewidth=1.0)
-                    
-                    plt.ylim([0, 1])
-
-                # plt.suptitle('Direct choices proportion per type of agents', fontsize=14, fontweight='bold')
-                # plt.legend(loc='lower left', frameon=False)
-
-                plt.savefig("figure_{}.pdf".format(suffix))
-                # plt.show()
-        else:
-            
-            t_max = len(data)
-
-            agents_proportions = np.zeros((t_max, 3))
-
-            for i in range(t_max):
-
-                for j in range(3):
-                    agents_proportions[i, j] = data[i][str(j)]
-
-            color_set = ["green", "blue", "red"]
-
-            for agent_type in range(3):
-                plt.plot(np.arange(t_max), agents_proportions[:, agent_type],
-                         color=color_set[agent_type], linewidth=1.0)
-                
-                plt.ylim([0, 1])
-
-            # plt.suptitle('Direct choices proportion per type of agents', fontsize=14, fontweight='bold')
-            # plt.legend(loc='lower left', frameon=False)
-
-            plt.savefig("figure_{}.pdf".format(suffix))
-            # plt.show()
 
 # ------------------------------------------------||| MAIN  |||----------------------------------------------- #   
 

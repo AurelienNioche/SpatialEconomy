@@ -1,7 +1,7 @@
 from multiprocessing import Pool
 import argparse
 import pickle
-from c_writer_main_wisdom_of_crowds import SimulationRunner, BackUp
+from c_economy import SimulationRunner, BackUp
 
 
 def launch(parameters):
