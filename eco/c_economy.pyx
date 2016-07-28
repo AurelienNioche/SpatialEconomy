@@ -1,9 +1,6 @@
 import numpy as np
 from itertools import product
-import pickle
-from module.converter import write
-from tqdm import tqdm
-from datetime import datetime
+from tqdm import tqdm, tqdm_gui
 cimport numpy as cnp
 
 
@@ -563,7 +560,7 @@ class SimulationRunner(object):
     @staticmethod
     def launch_economy(parameters, graphics=1):
        
-        print("Producing data...")
+        tqdm_gui.write("Producing data...")
 
         eco = Economy(parameters)
         map_limits = parameters["map_limits"]
@@ -637,70 +634,7 @@ class SimulationRunner(object):
                   "matrix_list": matrix_list,
                   "list_map": list_saving_map}
 
+        tqdm_gui.write("\nDone!")
+
         return result
 
-
-class BackUp(object):
-
-    @classmethod
-    def save_data(cls, results, parameters, graphics=1):
-
-        print("\nSaving data...")
-        
-        date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
-        saving_name = "{date}_idx{idx}".format(date=date, idx=parameters["idx"])
-        #
-        # file = open("../data/last.txt", mode="w")
-        # file.write(date)
-        # file.close()
-
-        # Save matrix of exchanges and positions dict (in order to print the main map later)
-
-        if graphics:
-
-            matrix_list = results["matrix_list"]
-            list_map = results["list_map"]
-
-            for i in range(len(matrix_list)):
-                write(matrix_list[i], table_name="exchange_{}".format(i),
-                      database_name='array_exchanges{}'.format(saving_name), descr="{}/3".format(i + 1))
-
-            pickle.dump(list_map, open("../data/positions/position_map{}.p".format(saving_name), mode='wb'))
-
-        direct_exchanges = results["direct_choices"]
-        indirect_exchanges = results["indirect_choices"]
-        
-        pickle.dump(direct_exchanges, open("../data/exchanges/direct_exchanges_{}.p".format(saving_name), mode='wb'))
-        pickle.dump(indirect_exchanges, open("../data/exchanges/indirect_exchanges_{}.p".format(saving_name), mode='wb'))
-
-        pickle.dump(parameters, open("../data/parameters/parameters_{}.p".format(saving_name), mode='wb'))
-        
-        
-
-
-def simple_main():
-    '''
-    Simplest program use
-    :return: None
-    '''
-
-    parameters = \
-        {
-            "workforce": np.array([35, 35, 35], dtype=int),
-            "alpha": 0.4,  # Set the coefficient learning
-            "tau": 0.02,  # Set the softmax parameter.
-            "t_max": 1200,  # Set the number of time units the simulation will run
-            "stride": 1,  # by each agent at each round
-            "vision": 6,  # Set the importance of other agents'results in
-            "area": 10,  # front of an individual res
-            "map_limits": {"width": 20, "height": 20},
-
-        }
-
-    results = SimulationRunner.main_runner(parameters=parameters, graphics=0)
-
-    BackUp.save_data(results, parameters=parameters, graphics=1)
-
-
-if __name__ == "__main__":
-    simple_main()

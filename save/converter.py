@@ -1,4 +1,4 @@
-from module.save_array import Database
+from save.save_db_array import Database
 from time import time
 import numpy as np
 from tqdm import tqdm

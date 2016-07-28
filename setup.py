@@ -13,5 +13,5 @@ extensions = [
 
 setup(
     name="c_economy",
-    ext_modules = cythonize(extensions),
+    ext_modules=cythonize(extensions),
 )
