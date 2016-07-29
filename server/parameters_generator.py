@@ -22,7 +22,7 @@ class ParametersGenerator(object):
         self.workforce_mini = 50
         self.workforce_maxi = 70
     
-        self.date =  str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
+        self.date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
 
         self.nb_sub_list = 100
 
@@ -73,10 +73,11 @@ class ParametersGenerator(object):
                                     "date": self.date
 
                                 }
-
-                            idx += 1
                             parameters_list.append(parameters)
-                            suffixes_list.append("{date}_{idx}".format(date=self.date, idx=idx))
+                            suffixes_list.append("{date}_idx{idx}".format(date=self.date, idx=idx))
+
+                            # incremente idx
+                            idx += 1
 
         return parameters_list, suffixes_list
 

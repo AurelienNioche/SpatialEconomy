@@ -9,7 +9,10 @@ class Database(object):
     def __init__(self, database_name='results'):
 
         # Backup is a database format, using Sqlite3 management system
-        self.folder_path = "../../results"
+        self.folder_path = "../results"
+
+        self.create_directory()
+
         self.db_path = "{}/{}.db".format(self.folder_path, database_name)
 
         # Create connexion to the database
@@ -21,7 +24,11 @@ class Database(object):
         self.types = {int: "INTEGER", float: "REAL", str: "TEXT", list: "TEXT", np.float64: "REAL",
                       np.int64: "INTEGER"}
 
-    def __del__(self):
+    # def __del__(self):
+    #
+    #     self.close()
+
+    def close(self):
 
         # Save modifications and close connexion.
         self.connexion.commit()
@@ -29,9 +36,8 @@ class Database(object):
 
     def create_directory(self):
 
-        if path.exists(self.folder_path):
-            pass
-        else:
+        if not path.exists(self.folder_path):
+
             mkdir(self.folder_path)
 
     def has_table(self, table_name):
@@ -202,18 +208,23 @@ class BackUp(object):
 
     def save(self, data):
 
-        if not self.db.has_table(self.table):
+        if self.db.has_table(self.table):
 
-            print("BackUp: Create the '{}' table.".format(self.table))
+            self.db.remove(self.table)
 
-            db_columns = OrderedDict()
-            for key in data[0]:  # data is a list of dictionaries, each of those being for one 'trial'
-                db_columns[key] = type(data[0][key])
-            self.db.create_table(table_name=self.table, columns=db_columns)
+        print("BackUp: Create the '{}' table.".format(self.table))
+
+        db_columns = OrderedDict()
+        for key in data[0]:  # data is a list of dictionaries, each of those being for one 'trial'
+            db_columns[key] = type(data[0][key])
+
+        self.db.create_table(table_name=self.table, columns=db_columns)
 
         print("BackUp: Saving...")
 
         self.db.fill_table(table_name=self.table, data=data)
+
+        self.db.close()
 
         print("BackUp: Data saved.")
 

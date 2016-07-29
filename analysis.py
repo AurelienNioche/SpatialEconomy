@@ -1,5 +1,4 @@
 import numpy as np
-import pickle
 from multiprocessing import Pool
 from save.save_db_dic import BackUp
 from save.import_data import import_data, import_suffixes
@@ -88,6 +87,7 @@ class MoneyAnalysis(object):
             ('m0', money[0]),
             ('m1', money[1]),
             ('m2', money[2]),
+            ('m_sum', money[0] + money[1] + money[2]),
             ('interruptions', interruptions)
         ])
         
@@ -98,15 +98,15 @@ class MoneyAnalysis(object):
 
 class DataSaver(object):
     
-    def _init_(self):
+    def __init__(self):
         pass
 
     @classmethod    
-    def save_data(cls, session):
+    def save_data(cls, session_suffix):
 
         money_analysis = MoneyAnalysis()
 
-        suffixes = import_suffixes(session)
+        suffixes = import_suffixes(session_suffix=session_suffix)
 
         pool = Pool(processes=12)
         data = pool.map(money_analysis.analyse, suffixes)
@@ -125,9 +125,8 @@ class DataSaver(object):
 
 def main(session_suffix):
 
-    session_suffixes = pickle.load(open("session_{}".format(session_suffix), mode='rb'))
     data_saver = DataSaver()
-    data_saver.save_data(session=session_suffixes)
+    data_saver.save_data(session_suffix=session_suffix)
     
 if __name__ == "__main__":
 
