@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 from save.save_db_dic import BackUp
 from save.import_data import import_data, import_suffixes
 from collections import OrderedDict
@@ -120,31 +121,17 @@ class DataSaver(object):
 
         backup = BackUp()
         backup.save(data)
-
-
-                                    
-                                    
-        
-         
-        
-        
-        
-
-        
-
-       
         
 
 # ------------------------------------------------||| MAIN  |||----------------------------------------------- #   
 
 
+def main(session_suffix):
 
-def main(suffix):
-
-    m = MoneyAnalysis()
-    results = m.analyse(suffix)
-    m.save_data(results) 
+    session_suffixes = pickle.load(open("session_{}".format(session_suffix), mode='rb'))
+    data_saver = DataSaver()
+    data_saver.save_data(session=session_suffixes)
     
 if __name__ == "__main__":
 
-    main(suffix="bhablfbrbh")
+    main(session_suffix="2016-07-29_15-17")
