@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+from multiprocessing import Pool
 from save.save_db_dic import BackUp
 from save.import_data import import_data, import_suffixes
 from collections import OrderedDict
@@ -105,14 +106,10 @@ class DataSaver(object):
 
         money_analysis = MoneyAnalysis()
 
-        data = []
         suffixes = import_suffixes(session)
 
-        for suffix in suffixes:
-
-            result = money_analysis.analyse(suffix=suffix)
-
-            data.append(result)
+        pool = Pool(processes=12)
+        data = pool.map(money_analysis.analyse, suffixes)
 
         cls.write(data)
 
