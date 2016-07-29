@@ -31,8 +31,6 @@
 # fin des directives PBS
 #############################
 
-i = "0"
-
 module purge # modules cleaning
 module add torque
 pyenv local 3.5.2
@@ -54,9 +52,9 @@ echo "#############################"
 
 # What you actually want to launch
 echo "Start the job"
-echo launch_multi.py ../data/parameters_lists/slice_${i}.p 
+echo launch_multi.py ../data/parameters_lists/slice_0.p
 # launch python script with pickle object for parameters and number of processes
-python launch_multi.py ../data/parameters_lists/slice_${i}.p 12
+python launch_multi.py ../data/parameters_lists/slice_0.p 12
 
 # all done
 echo "Job finished"

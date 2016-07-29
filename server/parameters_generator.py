@@ -132,7 +132,7 @@ class ParametersGenerator(object):
             content = f.read()
             f.close()
 
-            replaced = re.sub('i = "0"', 'i = "{}"'.format(i), content)
+            replaced = re.sub('slice_0', 'slice_{}'.format(i), content)
             replaced = re.sub('SimuBasile', 'SimuBasile{}'.format(i), replaced)
 
             f = open("{}{}.sh".format(prefix_output_file, i), 'w')
