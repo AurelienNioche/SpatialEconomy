@@ -4,6 +4,15 @@
 # Your job name (displayed by the queue)
 #PBS -N SimuBasile
 
+#Merge outputs files 
+#PBS -j o
+
+#change output file's name 
+#PBS -e /home/anioche/basile/.log/SimuBasile.err
+
+#PBS -o /home/anioche/basile/.log/SimuBasile.log
+
+
 # Specify the working directory
 #PBS -d /home/anioche/basile/SpatialEconomy-master/SpatialEconomy/
 
@@ -45,6 +54,7 @@ echo "#############################"
 
 # What you actually want to launch
 echo "Start the job"
+echo launch_multi.py ../data/parameters_lists/slice_${i}.p 
 # launch python script with pickle object for parameters and number of processes
 python launch_multi.py ../data/parameters_lists/slice_${i}.p 12
 
