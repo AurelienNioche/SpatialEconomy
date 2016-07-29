@@ -2,15 +2,12 @@
 
 #############################
 # Your job name (displayed by the queue)
-#PBS -N SimuBasile
-
-#Merge outputs files 
-#PBS -j o
+#PBS -N SimuBasile0
 
 #change output file's name 
-#PBS -e /home/anioche/basile/.log/SimuBasile.err
+#PBS -e /home/anioche/basile/.log/SimuBasile0.err
 
-#PBS -o /home/anioche/basile/.log/SimuBasile.log
+#PBS -o /home/anioche/basile/.log/SimuBasile0.log
 
 
 # Specify the working directory
