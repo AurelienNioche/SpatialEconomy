@@ -59,9 +59,9 @@ cdef class Economy(object):
     
     def __cinit__(self, dict parameters):
 
-        self.vision = parameters["vision"]/2
+        self.vision = parameters["vision"]
 
-        self.area = parameters["area"]/2
+        self.area = parameters["area"]
         self.stride = parameters["stride"]
 
         self.map_limits = parameters["map_limits"]
@@ -637,9 +637,9 @@ class SimulationRunner(object):
         indirect_exchanges_proportions_list= list()
         # Place agents and stuff...
         eco.setup()
-
+            
         for t in range(parameters["t_max"]):
-
+             
             eco.reset()
 
             for idx in range(eco.n):

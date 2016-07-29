@@ -84,7 +84,7 @@ class ParametersGenerator(object):
 
         parameters_dict = {}
 
-        sub_part = int(len(parameters_list) / 10)
+        sub_part = int(len(parameters_list) / self.nb_sub_list)
 
         cursor = 0
 
