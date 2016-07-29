@@ -5,7 +5,7 @@
 #PBS -N SimuBasile
 
 # Specify the working directory
-#PBS -d ../../SpatialEconomy/
+#PBS -d /home/anioche/basile/SpatialEconomy-master/SpatialEconomy/
 
 # walltime (hh:mm::ss)
 #PBS -l walltime=02:00:00
