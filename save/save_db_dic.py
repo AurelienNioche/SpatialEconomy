@@ -64,12 +64,16 @@ class Database(object):
 
     def has_column(self, table_name, column_name):
 
-        columns = [i[1] for i in self.read("PRAGMA table_info({})".format(table_name))]
+        columns = self.get_column_list(table_name)
 
         if column_name in columns:
             return 1
         else:
             return 0
+
+    def get_column_list(self, table_name='data'):
+
+        return [i[1] for i in self.read("PRAGMA table_info({})".format(table_name))]
 
     def create_table(self, table_name, columns):
 

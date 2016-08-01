@@ -1,4 +1,5 @@
 from pylab import plt, np
+from os import path, mkdir
 
 from save.import_data import import_data
 
@@ -55,5 +56,8 @@ class GraphProportionChoices(object):
         # plt.suptitle('Direct choices proportion per type of agents', fontsize=14, fontweight='bold')
         # plt.legend(loc='lower left', frameon=False)
 
-        plt.savefig("figure_{}.pdf".format(suffix))
+        if not path.exists("../figures"):
+            mkdir("../figures")
+
+        plt.savefig("../figures/figure_{}.pdf".format(suffix))
         # plt.show()
