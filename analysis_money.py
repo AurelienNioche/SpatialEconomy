@@ -111,13 +111,13 @@ class DataSaver(object):
         pool = Pool(processes=12)
         data = pool.map(money_analysis.analyse, suffixes)
 
-        cls.write(data)
+        cls.write(data, session_suffix)
 
     @classmethod
-    def write(cls, data):
+    def write(cls, data, session_suffix):
 
-        backup = BackUp()
-        backup.save(data)
+        backup = BackUp(database_name="results_{}".format(session_suffix))
+        backup.save(data=data)
         
 
 # ------------------------------------------------||| MAIN  |||----------------------------------------------- #   
