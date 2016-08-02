@@ -75,6 +75,7 @@ class MoneyAnalysis(object):
                 interruptions += cond0 * cond1
 
         data_to_save = OrderedDict([
+            ('idx', parameters["idx"]),
             ('a0', parameters["workforce"][0]),
             ('a1', parameters["workforce"][1]),
             ('a2', parameters["workforce"][2]),

@@ -10,7 +10,7 @@ class GraphProportionChoices(object):
         pass
 
     @classmethod
-    def plot(cls, suffix, multi=1):
+    def plot(cls, suffix, multi=0):
 
         parameters, direct_exchange, indirect_exchange = import_data(suffix=suffix)
 
@@ -38,7 +38,7 @@ class GraphProportionChoices(object):
             for i in range(t_max):
 
                 for j in range(3):
-                    agents_proportions[i, j] = direct_exchange[i][str(j)]
+                    agents_proportions[i, j] = direct_exchange[i][j]
 
             cls.draw(agents_proportions=agents_proportions, t_max=t_max, suffix=suffix)
 
@@ -49,9 +49,9 @@ class GraphProportionChoices(object):
 
         for agent_type in range(3):
             plt.plot(np.arange(t_max), agents_proportions[:, agent_type],
-                     color=color_set[agent_type], linewidth=1.0)
+                     color=color_set[agent_type], linewidth=2.0)
 
-            plt.ylim([0, 1])
+            plt.ylim([-0.1, 1.1])
 
         # plt.suptitle('Direct choices proportion per type of agents', fontsize=14, fontweight='bold')
         # plt.legend(loc='lower left', frameon=False)
@@ -60,4 +60,4 @@ class GraphProportionChoices(object):
             mkdir("../figures")
 
         plt.savefig("../figures/figure_{}.pdf".format(suffix))
-        # plt.show()
+        plt.show()

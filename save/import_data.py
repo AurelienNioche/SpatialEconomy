@@ -12,6 +12,13 @@ def import_data(suffix):
     return parameters, direct_exchange, indirect_exchange
 
 
+def import_parameters(suffix):
+
+    parameters = pickle.load(open("../data/parameters/parameters_{}.p".format(suffix), mode="rb"))
+    # print(parameters)
+    return parameters
+
+
 def import_suffixes(session_suffix):
 
     suffixes = pickle.load(open("../data/session/session_{}.p".format(session_suffix), mode='rb'))
