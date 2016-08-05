@@ -1,8 +1,11 @@
 import numpy as np
 from multiprocessing import Pool
+from collections import OrderedDict
 from save.save_db_dic import Database
 from save.import_data import import_parameters
 from analysis_graphics import GraphProportionChoices
+from pylab import plt
+from os import path, mkdir
 
 
 class Analyst(object):
@@ -75,6 +78,8 @@ class Analyst(object):
 
         assert var in self.parameters, ""
 
+        results = {}
+
         for parameter in self.parameters_to_test:
 
             parameter_values = np.unique(self.db.read_column(column_name='{}'.format(parameter)))
@@ -82,18 +87,22 @@ class Analyst(object):
             print("Possible values for {}:".format(parameter), "min", np.min(parameter_values),
                   "max", np.max(parameter_values))
 
-            average_m_sum = list()
+            average_m_sum = OrderedDict()
 
             for v in parameter_values:
 
                 m_sum = \
                     [i[0] for i in self.db.read
                      (query="SELECT `{}` FROM `data` WHERE {} = {}".format(var, parameter, v))]
-                average_m_sum.append(np.mean(m_sum))
+                average_m_sum[v] = np.mean(m_sum)
 
             print("Average '{}' for {}".format(var, parameter), average_m_sum)
 
+            results[parameter] = average_m_sum
+
             print()
+
+        return results
 
     def select_best_economy(self):
 
@@ -111,6 +120,25 @@ class Analyst(object):
 
         GraphProportionChoices.plot(suffix="{}_idx{}".format(self.session_suffix, idx_max_m_sum))
 
+    def plot_var_against_parameter(self, var, results):
+
+        for parameter in results.keys():
+
+            x = [i for i in results[parameter].keys()]
+            y = [i for i in results[parameter].values()]
+
+            fig_title = "{} against {}".format(var, parameter)
+
+            plt.plot(x, y, linewidth=2)
+            plt.title(fig_title)
+
+            if not path.exists("../figures"):
+                mkdir("../figures")
+
+            plt.savefig("../figures/{}_{}.pdf".format(fig_title, self.session_suffix))
+            plt.close()
+
+
 
 
 
@@ -121,9 +149,10 @@ def main(session_suffix):
 
     a = Analyst(session_suffix)
     # a.compute_min_max()
-    # a.represent_var_according_to_parameter('m_sum')
+    results = a.represent_var_according_to_parameter('m_sum')
+    a.plot_var_against_parameter('m_sum', results)
     # a.represent_var_according_to_parameter('interruptions')
-    a.select_best_economy()
+    # a.select_best_economy()
 
 if __name__ == "__main__":
 
