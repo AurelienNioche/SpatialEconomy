@@ -187,6 +187,9 @@ class ParametersGenerator(object):
     
     def run(self):
 
+        self.empty_scripts_folder()
+        self.create_folders()
+
         workforce_list = self.generate_workforce_list()
 
         parameters_list = self.generate_parameters_list(workforce_list=workforce_list)
