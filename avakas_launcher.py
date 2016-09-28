@@ -34,7 +34,7 @@ class AvakasLauncher(object):
 
             print("Launch script '{}'...".format(script_name))
 
-            output = subprocess.check_output("qsub {}/{}".format(self.folder["script"], script_name).split())
+            output = subprocess.check_output("qsub {}/{}".format(self.folder["scripts"], script_name).split())
 
             print("System answers '{}'.".format(str(output)[:-1]))  # [:-1] is for removing the \n at the end
 
