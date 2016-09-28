@@ -1,8 +1,8 @@
+from eco.c_economy import SimulationRunner
+from save.save_eco import BackUp
 from multiprocessing import Pool
 import argparse
 import pickle
-from eco.c_economy import SimulationRunner
-from save.save_eco import BackUp
 
 
 def launch(parameters):
