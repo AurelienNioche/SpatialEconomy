@@ -2,19 +2,19 @@
 
 #############################
 # Your job name (displayed by the queue)
-#PBS -N SimuBasile0
+#PBS -N SimuSpatial0
 
 #change output file's name 
-#PBS -e /home/anioche/basile/.log/SimuBasile0.err
+#PBS -e /home/anioche/basile/.log/SimuSpatial0.err
 
-#PBS -o /home/anioche/basile/.log/SimuBasile0.log
+#PBS -o /home/anioche/basile/.log/SimuSpatial0.log
 
 
 # Specify the working directory
 #PBS -d /home/anioche/basile/SpatialEconomy-master/SpatialEconomy/
 
 # walltime (hh:mm::ss)
-#PBS -l walltime=02:00:00
+#PBS -l walltime=10:00:00
 
 # Specify the number of nodes(nodes=) and the number of cores per nodes(ppn=) to be used
 #PBS -l nodes=1:ppn=6
@@ -23,7 +23,7 @@
 #PBS -l mem=1gb
 
 #PBS -m abe
-#PBS -M basilegarcia@gmail.com
+#PBS -M clusterresultssimulation@gmail.com
 
 # fin des directives PBS
 #############################
@@ -49,9 +49,9 @@ echo "#############################"
 
 # What you actually want to launch
 echo "Start the job"
-echo launch_multi.py ../data/parameters_lists/slice_0.p
+echo launch_multi.py ../avakas_input_parameters/slice_0.p
 # launch python script with pickle object for parameters and number of processes
-python launch_multi.py ../data/parameters_lists/slice_0.p 12
+python launch_multi.py ../avakas_input_parameters/slice_0.p 12
 
 # all done
 echo "Job finished"

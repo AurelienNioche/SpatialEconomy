@@ -3,6 +3,8 @@ import pickle
 from datetime import datetime 
 from os import path, mkdir
 import re
+import shutil
+from collections import OrderedDict
 
 
 class ParametersGenerator(object):
@@ -27,6 +29,57 @@ class ParametersGenerator(object):
 
         self.nb_sub_list = 500
 
+        self.folders = OrderedDict(
+            [
+                ("macro", "avakas_simulation_template"),
+                ("scripts", "../avakas_scripts"),
+                ("parameters", "../avakas_input_parameters"),
+                ("logs", "../avakas_logs"),
+                ("data", "../data")
+            ]
+        )
+
+        self.root_file = "simulation_template.sh"
+
+    def empty_scripts_folder(self):
+
+        if path.exists(self.folders["data"]):
+
+            response = input("Do you want to remove data folder?")
+
+            while response not in ['y', 'yes', 'n', 'no', 'Y', 'N']:
+                response = input("You can only respond by 'yes' or 'no'.")
+
+            print("Proceeding...")
+
+            if response in ['y', 'yes', 'Y']:
+
+                if path.exists(self.folders["data"]):
+                    shutil.rmtree(self.folders["data"])
+                print("Data folder has been erased.")
+            else:
+                print("Data folder has been conserved.")
+
+        else:
+            print("Proceeding...")
+
+        print("Remove old scripts and logs...")
+
+        if path.exists(self.folders["scripts"]):
+            shutil.rmtree(self.folders["scripts"])
+
+        print("Old scripts and logs have been removed.")
+
+        if path.exists(self.folders["logs"]):
+            shutil.rmtree(self.folders["logs"])
+
+    def create_folders(self):
+
+        for directory in self.folders.values():
+
+            if not path.exists(directory):
+                mkdir(directory)
+
     def generate_workforce_list(self):
 
         array = np.zeros(3)
@@ -47,7 +100,6 @@ class ParametersGenerator(object):
 
         idx = 0
         parameters_list = []
-        suffixes_list = [] 
 
         for workforce in workforce_list:
 
@@ -74,12 +126,9 @@ class ParametersGenerator(object):
 
                                 }
                             parameters_list.append(parameters)
-                            suffixes_list.append("{date}_idx{idx}".format(date=self.date, idx=idx))
-
-                            # incremente idx
                             idx += 1
 
-        return parameters_list, suffixes_list
+        return parameters_list
 
     def generate_parameters_dict(self, parameters_list):
 
@@ -105,36 +154,23 @@ class ParametersGenerator(object):
 
         return parameters_dict
 
-    def save_parameters_dict(self, parameters_dict, suffixes_list):
-
-        folders = ["../../data/parameters_lists/", "../../data/session/"]
-        
-        for i in folders:
-            if not path.exists(i):
-                mkdir(i)
+    def save_parameters_dict(self, parameters_dict):
         
         for i in parameters_dict.keys():
             pickle.dump(parameters_dict[i],
-                        open("../../data/parameters_lists/slice_{}.p".format(i), mode="wb"))
-
-        pickle.dump(suffixes_list,  open("../../data/session/session_{}.p".format(self.date), mode="wb"))
+                        open("{}/slice_{}.p".format(self.folders["parameters"], i), mode="wb"))
 
     def create_scripts(self):
 
-        directory = "../../data/session/"
-        root_file = "simulation.sh"
-        prefix_output_file = "{}basile-simulation_".format(directory)
-
-        if not path.exists(directory):
-            mkdir(directory)
+        prefix_output_file = "{}/spatial-simulation_".format(self.folders["scripts"])
 
         for i in range(self.nb_sub_list):
-            f = open(root_file, 'r')
+            f = open(self.root_file, 'r')
             content = f.read()
             f.close()
 
             replaced = re.sub('slice_0', 'slice_{}'.format(i), content)
-            replaced = re.sub('SimuBasile', 'SimuBasile{}'.format(i), replaced)
+            replaced = re.sub('SimuSpatial', 'SimuSpatial{}'.format(i), replaced)
 
             f = open("{}{}.sh".format(prefix_output_file, i), 'w')
             f.write(replaced)
@@ -143,10 +179,9 @@ class ParametersGenerator(object):
     def create_meta_launcher(self):
 
         content = "# !/usr/bin/env bash\n" \
-                  "for i in {0..%d}; do\nqsub basile-simulation_${i}.sh \ndone" % (self.nb_sub_list - 1)
+                  "for i in {0..%d}; do\nqsub spatial-simulation_${i}.sh \ndone" % (self.nb_sub_list - 1)
 
-        directory = "../../data/session/"
-        f = open("{}meta_launcher.sh".format(directory), 'w')
+        f = open("{}/meta_launcher.sh".format(self.folders["scripts"]), 'w')
         f.write(content)
         f.close()
     
@@ -154,11 +189,11 @@ class ParametersGenerator(object):
 
         workforce_list = self.generate_workforce_list()
 
-        parameters_list, suffixes_list = self.generate_parameters_list(workforce_list=workforce_list)
+        parameters_list = self.generate_parameters_list(workforce_list=workforce_list)
 
         parameters_dict = self.generate_parameters_dict(parameters_list)
 
-        self.save_parameters_dict(parameters_dict, suffixes_list)
+        self.save_parameters_dict(parameters_dict)
 
         self.create_scripts()
 
