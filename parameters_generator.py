@@ -176,15 +176,15 @@ class ParametersGenerator(object):
             f.write(replaced)
             f.close()
 
-    def create_meta_launcher(self):
-
-        content = "# !/usr/bin/env bash\n" \
-                  "for i in {0..%d}; do\nqsub spatial-simulation_${i}.sh \ndone" % (self.nb_sub_list - 1)
-
-        f = open("{}/meta_launcher.sh".format(self.folders["scripts"]), 'w')
-        f.write(content)
-        f.close()
-    
+    # def create_meta_launcher(self):
+    #
+    #     content = "# !/usr/bin/env bash\n" \
+    #               "for i in {0..%d}; do\nqsub spatial-simulation_${i}.sh \ndone" % (self.nb_sub_list - 1)
+    #
+    #     f = open("{}/meta_launcher.sh".format(self.folders["scripts"]), 'w')
+    #     f.write(content)
+    #     f.close()
+    #
     def run(self):
 
         self.empty_scripts_folder()
@@ -201,9 +201,9 @@ class ParametersGenerator(object):
         self.save_parameters_dict(parameters_dict)
         print("Generate scripts...")
         self.create_scripts()
-        print("Generate launcher...")
-
-        self.create_meta_launcher()
+        # print("Generate launcher...")
+        #
+        # self.create_meta_launcher()
         print("Done.")
 
 
