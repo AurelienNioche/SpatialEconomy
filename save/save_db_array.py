@@ -91,8 +91,3 @@ class Database(object):
             cursor += n_rows
 
         return list_array
-
-    def __del__(self):
-
-        self.connexion.commit()
-        self.connexion.close()

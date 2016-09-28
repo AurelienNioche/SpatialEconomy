@@ -3,6 +3,7 @@ import argparse
 import pickle
 from eco.c_economy import SimulationRunner
 from save.save_eco import BackUp
+from os import chdir
 
 
 def launch(parameters):
@@ -14,12 +15,16 @@ def launch(parameters):
 def main():
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('current_dir', type=str,
+                        help='A current directory is required!')
     parser.add_argument('parameters_list_name', type=str,
                         help='A name of pickle file for parameters is required!')
     parser.add_argument('number_of_processes', type=int,
                         help='A name of authorized processes is required!')
 
     args = parser.parse_args()
+
+    chdir(args.current_dir)
 
     parameters_list = pickle.load(open(args.parameters_list_name, mode='rb'))
 

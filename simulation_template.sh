@@ -49,9 +49,9 @@ echo "#############################"
 
 # What you actually want to launch
 echo "Start the job"
-echo launch_multi.py ../avakas_input_parameters/slice_0.p
+echo launch_multi.py ~/basile/SpatialEconomy-master/SpatialEconomy ~/basile/SpatialEconomy-master/avakas_input_parameters/slice_0.p 12
 # launch python script with pickle object for parameters and number of processes
-python launch_multi.py ../avakas_input_parameters/slice_0.p 12
+python launch_multi.py ~/basile/SpatialEconomy-master/SpatialEconomy ~/basile/SpatialEconomy-master/avakas_input_parameters/slice_0.p 12
 
 # all done
 echo "Job finished"
