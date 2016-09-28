@@ -5,9 +5,9 @@
 #PBS -N SimuSpatial0
 
 #change output file's name 
-#PBS -e /home/anioche/basile/.log/SimuSpatial0.err
+#PBS -e /home/anioche/basile/SpatialEconomy-master/avakas_logs/SimuSpatial0.err
 
-#PBS -o /home/anioche/basile/.log/SimuSpatial0.log
+#PBS -o /home/anioche/basile/SpatialEconomy-master/avakas_logs/SimuSpatial0.log
 
 
 # Specify the working directory
