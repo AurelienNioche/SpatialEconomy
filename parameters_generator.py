@@ -4,7 +4,7 @@ from datetime import datetime
 from os import path, mkdir
 import re
 import shutil
-from collections import OrderedDict
+from arborescence.arborescence import Folders
 
 
 class ParametersGenerator(object):
@@ -29,15 +29,7 @@ class ParametersGenerator(object):
 
         self.nb_sub_list = 500
 
-        self.folders = OrderedDict(
-            [
-                ("macro", "avakas_simulation_template"),
-                ("scripts", "../avakas_scripts"),
-                ("parameters", "../avakas_input_parameters"),
-                ("logs", "../avakas_logs"),
-                ("data", "../data")
-            ]
-        )
+        self.folders = Folders.folders
 
         self.root_file = "simulation_template.sh"
 

@@ -4,6 +4,7 @@ import argparse
 import pickle
 from eco.c_economy import SimulationRunner
 from save.save_eco import BackUp
+from arborescence.arborescence import Folders
 
 
 def launch(parameters):
@@ -22,7 +23,9 @@ def main():
 
     args = parser.parse_args()
 
-    parameters_list = pickle.load(open("/home/anioche/basile/SpatialEconomy-master/{}".format(args.parameters_list_name), mode='rb'))
+    parameters_list = pickle.load(open("{}/{}".format(
+        Folders.folders["parameters"],
+        args.parameters_list_name), mode='rb'))
 
     # Launch the process
 
