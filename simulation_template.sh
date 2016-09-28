@@ -28,8 +28,6 @@
 # fin des directives PBS
 #############################
 
-cd /home/anioche/basile/SpatialEconomy-master/SpatialEconomy
-
 module purge # modules cleaning
 module add torque
 pyenv local 3.5.2
@@ -51,9 +49,9 @@ echo "#############################"
 
 # What you actually want to launch
 echo "Start the job"
-echo launch_multi.py ~/basile/SpatialEconomy-master/avakas_input_parameters/slice.p 12
+echo launch_multi.py /home/anioche/basile/SpatialEconomy-master/avakas_input_parameters/slice.p 12
 # launch python script with pickle object for parameters and number of processes
-python launch_multi.py ~/basile/SpatialEconomy-master/avakas_input_parameters/slice.p 12
+python launch_multi.py /home/anioche/basile/SpatialEconomy-master/avakas_input_parameters/slice.p 12
 
 # all done
 echo "Job finished"
