@@ -9,5 +9,5 @@ For generating data on a calculation server:
   * generate pickle objects containing list of dictoniary, each dictionary containing paramaters for one economy.
   * generate job scripts for calculation server.
 
-- launch meta_launcher.sh
+- launch avakas-launcher.sh
  * compute on server.
