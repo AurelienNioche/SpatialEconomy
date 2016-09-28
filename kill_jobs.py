@@ -1,14 +1,12 @@
 from subprocess import check_output, CalledProcessError
 import json
+from arborescence.arborescence import Folders
 
 
 class JobKiller(object):
 
     def __init__(self):
-
-        self.folder = {
-            "job_names": ".."
-        }
+        self.folder = Folders.folders
 
     def load_job_names(self):
 
