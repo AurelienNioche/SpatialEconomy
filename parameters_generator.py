@@ -190,6 +190,8 @@ class ParametersGenerator(object):
         self.empty_scripts_folder()
         self.create_folders()
 
+        print("Generate parameters list...")
+
         workforce_list = self.generate_workforce_list()
 
         parameters_list = self.generate_parameters_list(workforce_list=workforce_list)
@@ -197,10 +199,12 @@ class ParametersGenerator(object):
         parameters_dict = self.generate_parameters_dict(parameters_list)
 
         self.save_parameters_dict(parameters_dict)
-
+        print("Generate scripts...")
         self.create_scripts()
+        print("Generate launcher...")
 
         self.create_meta_launcher()
+        print("Done.")
 
 
 def main():

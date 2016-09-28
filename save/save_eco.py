@@ -9,7 +9,7 @@ class BackUp(object):
     @classmethod
     def save_data(cls, results, parameters, graphics=1):
 
-        cls.create_folders()
+        cls.create_folders(graphics)
 
         tqdm_gui.write("\nSaving data...")
 
@@ -38,9 +38,12 @@ class BackUp(object):
         tqdm_gui.write("\nData saved...")
 
     @classmethod
-    def create_folders(cls):
+    def create_folders(cls, graphics):
 
-        folders = ["../data", "../data/parameters", "../data/exchanges", "../data/positions"]
+        folders = ["../data", "../data/parameters"]
+        if graphics:
+            folders += ["../data/exchanges", "../data/positions"]
+
         for i in folders:
 
             if not path.exists(i):
