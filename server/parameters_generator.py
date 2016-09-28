@@ -4,27 +4,28 @@ from datetime import datetime
 from os import path, mkdir
 import re
 
+
 class ParametersGenerator(object):
 
     def __init__(self):
 
-        self.alpha_list = [0.1, 0.2, 0.3, 0.4, 0.5]
-        self.tau_list = [0.01, 0.02, 0.03, 0.04, 0.05]
-        self.vision_list = [1, 3, 6, 12, 15]
-        self.area_list = [1, 3, 6, 12, 15]
+        self.alpha_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
+        self.tau_list = [0.01, 0, 0.15, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
+        self.vision_list = [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
+        self.area_list = [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
 
         self.stride = 1
-        self.t_max = 600
+        self.t_max = 1000
         self.width = 30
         self.height = 30
 
-        self.workforce_step = 5
+        self.workforce_step = 10
         self.workforce_mini = 50
-        self.workforce_maxi = 70
+        self.workforce_maxi = 150
     
         self.date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
 
-        self.nb_sub_list = 100
+        self.nb_sub_list = 500
 
     def generate_workforce_list(self):
 
@@ -65,8 +66,7 @@ class ParametersGenerator(object):
                                     "t_max": self.t_max,  # Set the number of time units the simulation will run
                                     # by each agent a at each round
                                     "stride": self.stride,
-                                    "vision": vision,  # Set the importance of other agents'results in
-                                    # front of an indivual res
+                                    "vision": vision,
                                     "area": area,  # set the perimeter within each agent can move
                                     "map_limits": {"width": self.width, "height": self.height},
                                     "idx": idx,
