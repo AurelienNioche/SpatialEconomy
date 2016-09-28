@@ -2,12 +2,12 @@
 
 #############################
 # Your job name (displayed by the queue)
-#PBS -N SimuSpatial0
+#PBS -N SimuSpatial
 
 #change output file's name 
-#PBS -e /home/anioche/basile/SpatialEconomy-master/avakas_logs/SimuSpatial0.err
+#PBS -e /home/anioche/basile/SpatialEconomy-master/avakas_logs/SimuSpatial.err
 
-#PBS -o /home/anioche/basile/SpatialEconomy-master/avakas_logs/SimuSpatial0.log
+#PBS -o /home/anioche/basile/SpatialEconomy-master/avakas_logs/SimuSpatial.log
 
 
 # Specify the working directory
@@ -27,6 +27,8 @@
 
 # fin des directives PBS
 #############################
+
+cd /home/anioche/basile/SpatialEconomy-master/SpatialEconomy
 
 module purge # modules cleaning
 module add torque
@@ -49,9 +51,9 @@ echo "#############################"
 
 # What you actually want to launch
 echo "Start the job"
-echo launch_multi.py ~/basile/SpatialEconomy-master/SpatialEconomy ~/basile/SpatialEconomy-master/avakas_input_parameters/slice_0.p 12
+echo launch_multi.py ~/basile/SpatialEconomy-master/avakas_input_parameters/slice.p 12
 # launch python script with pickle object for parameters and number of processes
-python launch_multi.py ~/basile/SpatialEconomy-master/SpatialEconomy ~/basile/SpatialEconomy-master/avakas_input_parameters/slice_0.p 12
+python launch_multi.py ~/basile/SpatialEconomy-master/avakas_input_parameters/slice.p 12
 
 # all done
 echo "Job finished"
