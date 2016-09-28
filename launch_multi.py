@@ -22,7 +22,7 @@ def main():
 
     args = parser.parse_args()
 
-    parameters_list = pickle.load(open(args.parameters_list_name, mode='rb'))
+    parameters_list = pickle.load(open("/home/anioche/basile/SpatialEconomy-master/{}".format(args.parameters_list_name), mode='rb'))
 
     # Launch the process
 
