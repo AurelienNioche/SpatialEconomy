@@ -16,7 +16,7 @@ class AvakasLauncher(object):
 
     def load_scripts(self):
 
-        mypath = self.folder["script"]
+        mypath = self.folder["scripts"]
         onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
         script_names = [f for f in onlyfiles if f[-3:] == ".sh"]
 
