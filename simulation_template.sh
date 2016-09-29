@@ -14,7 +14,7 @@
 #PBS -d /home/anioche/basile/SpatialEconomy-master/SpatialEconomy/
 
 # walltime (hh:mm::ss)
-#PBS -l walltime=10:00:00
+#PBS -l walltime=20:00:00
 
 # Specify the number of nodes(nodes=) and the number of cores per nodes(ppn=) to be used
 #PBS -l nodes=1:ppn=6

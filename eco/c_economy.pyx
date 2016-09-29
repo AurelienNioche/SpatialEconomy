@@ -47,24 +47,39 @@ cimport numpy as cnp
 cdef class Economy(object):
     
     cdef:
-        public int vision, area, stride, n, t
+        public int vision_area, movement_area, stride, n, t, map_width, map_height
         public double alpha, temperature
         public cnp.ndarray good, type, absolute_matrix,\
-               int_to_relative_choice, relative_to_absolute_choice, workforce, idx0, idx1,\
-               idx2, x_perimeter, y_perimeter, decision, choice, i_choice, value_ij,\
-               value_ik,value_kj, value_ki, value_option0, value_option1, estimation, exchange_matrix 
-        public object map_limits, map_of_agents, saving_map, choices_list, absolute_exchange_to_int,\
-               direct_choices_proportions, indirect_choices_proportions, direct_exchange, indirect_exchange
-        public list position 
+            int_to_relative_choice, relative_to_absolute_choice, workforce, idx0, idx1,\
+            idx2, x_perimeter, y_perimeter, decision, choice, i_choice, value_ij,\
+            value_ik,value_kj, value_ki, value_option0, value_option1, estimation, exchange_matrix, \
+            direct_choices_proportions, indirect_choices_proportions, direct_exchange, indirect_exchange, \
+            exchange_counter
+        public object map_of_agents, saving_map, absolute_exchange_to_int
+        public list position
     
     def __cinit__(self, dict parameters):
+        
+        # Get parameters
 
-        self.vision = parameters["vision"]
+        self.vision_area = parameters["vision_area"]
 
-        self.area = parameters["area"]
+        self.movement_area = parameters["movement_area"]
         self.stride = parameters["stride"]
 
-        self.map_limits = parameters["map_limits"]
+        self.map_width =  parameters["width"]
+        self.map_height =  parameters["height"]
+        
+        self.workforce = np.array([parameters["x0"],
+                                   parameters["x1"],
+                                   parameters["x2"]], dtype=int)# Number of agents by type
+
+        self.alpha = parameters["alpha"]  # Learning coefficient
+        self.temperature = parameters["tau"]  # Softmax parameter
+        
+        # Attributes for computation
+        
+        self.n = np.sum(self.workforce)  # Total number of agents
 
         self.absolute_matrix = np.array([[[0, 1], [1, 2], [2, 0]],
                                          [[0, 2], [1, 0], [2, 1]],
@@ -100,13 +115,6 @@ cdef class Economy(object):
             [0, 1, 5, 4],
             [3, 2, 1, 0],
             [4, 5, 2, 3]], dtype=int)
-
-        self.n = np.sum(parameters["workforce"])  # Total number of agents
-        self.workforce = np.zeros(len(parameters["workforce"]), dtype=int)
-        self.workforce[:] = parameters["workforce"]  # Number of agents by type
-
-        self.alpha = parameters["alpha"]  # Learning coefficient
-        self.temperature = parameters["tau"]  # Softmax parameter
 
         self.type = np.zeros(self.n, dtype=int)
         self.good = np.zeros(self.n, dtype=int)
@@ -153,20 +161,18 @@ cdef class Economy(object):
         self.estimation = np.zeros((4, self.n))
 
         self.exchange_matrix = \
-            np.zeros((self.map_limits["width"], self.map_limits["height"]),
+            np.zeros((self.map_width, self.map_height),
                      dtype=[("0", float, 1), ("1", float, 1), ("2", float, 1)])
 
         for i in [0, 1, 2]:
-            self.exchange_matrix[str(i)] = np.zeros((self.map_limits["width"], self.map_limits["height"]))
+            self.exchange_matrix[str(i)] = np.zeros((self.map_width, self.map_height))
 
-        self.choices_list = {"0": list(), "1": list(), "2": list()}
+        self.direct_choices_proportions = np.zeros(3)
+        self.indirect_choices_proportions = np.zeros(3)
+        self.direct_exchange = np.zeros(3)
+        self.indirect_exchange = np.zeros(3)
 
-        self.t = 0
-
-        self.direct_choices_proportions = {0: 0., 1: 0., 2: 0.}
-        self.indirect_choices_proportions = {0: 0., 1: 0., 2: 0.}
-        self.direct_exchange = {0: 0., 1: 0., 2: 0.}
-        self.indirect_exchange = {0: 0., 1: 0., 2: 0.}
+        self.exchange_counter = np.zeros(3)
 
         # This is the initial guest (same for every agent).
         # '1' means each type of exchange can be expected to be realized in only one unit of time
@@ -183,11 +189,14 @@ cdef class Economy(object):
 
     def setup_insert_agents_on_map(self):
 
-        for idx in range(self.n):
+        croissant_order = range(self.n)
+        random_order = np.random.permutation(croissant_order)
+
+        for idx in random_order:
 
             while True:
-                x = np.random.randint(0, self.map_limits["width"])
-                y = np.random.randint(0, self.map_limits["height"])
+                x = np.random.randint(0, self.map_width)
+                y = np.random.randint(0, self.map_height)
 
                 if (x, y) not in self.position:
                     self.position[idx] = (x, y)
@@ -199,18 +208,18 @@ cdef class Economy(object):
     def setup_define_perimeters(self):
 
         for idx in range(self.n):
-            self.x_perimeter["min"][idx] = self.position[idx][0] - self.area
-            self.x_perimeter["max"][idx] = self.position[idx][0] + self.area
-            self.y_perimeter["min"][idx] = self.position[idx][1] - self.area
-            self.y_perimeter["max"][idx] = self.position[idx][1] + self.area
+            self.x_perimeter["min"][idx] = self.position[idx][0] - self.movement_area
+            self.x_perimeter["max"][idx] = self.position[idx][0] + self.movement_area
+            self.y_perimeter["min"][idx] = self.position[idx][1] - self.movement_area
+            self.y_perimeter["max"][idx] = self.position[idx][1] + self.movement_area
 
     # --------------------------------------------------||| RESET |||----------------------------------------------- #
 
     def reset(self):
 
-        for i in self.direct_exchange.keys():
-            self.direct_exchange[i] = 0.
-            self.indirect_exchange[i] = 0.
+        self.direct_exchange[:] = 0.
+        self.indirect_exchange[:] = 0.
+        self.exchange_counter[:] = 0.
 
 
     # ---------------------------------------------||| MOVE /  MAP OPERATIONS |||------------------------------------ #
@@ -234,8 +243,8 @@ cdef class Economy(object):
         # 2: x, y coordinates)
 
         # We look at x  and y columns to check that they are in map dimensions
-        result_x_inf = nearby_positions[:, 0] < self.map_limits["width"]
-        result_y_inf = nearby_positions[:, 1] < self.map_limits["height"]
+        result_x_inf = nearby_positions[:, 0] < self.map_width
+        result_y_inf = nearby_positions[:, 1] < self.map_height
 
         result_x_sup = nearby_positions[:, 0] >= 0
         result_y_sup = nearby_positions[:, 1] >= 0
@@ -263,8 +272,6 @@ cdef class Economy(object):
         return positions_in_map[b_positions_in_map]
 
     cdef move_find_free_position(self, int idx, cnp.ndarray positions_in_map):
-        
-       
             
         np.random.shuffle(positions_in_map)
 
@@ -274,6 +281,7 @@ cdef class Economy(object):
 
             # If position
             if i not in self.position:
+
                 # Update dics
                 self.map_of_agents[i] = self.map_of_agents.pop(tuple(self.position[idx]))
                 self.saving_map[i] = self.saving_map.pop(tuple(self.position[idx]))
@@ -309,10 +317,10 @@ cdef class Economy(object):
 
     def encounter_check_nearby_positions(self, idx):
 
-        nearby_positions_x = {"min": self.position[idx][0] - self.vision,
-                              "max": self.position[idx][0] + self.vision}
-        nearby_positions_y = {"min": self.position[idx][1] - self.vision,
-                              "max": self.position[idx][1] + self.vision}
+        nearby_positions_x = {"min": self.position[idx][0] - self.vision_area,
+                              "max": self.position[idx][0] + self.vision_area}
+        nearby_positions_y = {"min": self.position[idx][1] - self.vision_area,
+                              "max": self.position[idx][1] + self.vision_area}
 
         position = np.asarray(self.position)
 
@@ -487,9 +495,8 @@ cdef class Economy(object):
         # (As there is only 2 options each time, computing probability for a unique option is sufficient)
 
         probability_of_choosing_option0 = \
-            np.exp(self.value_option0[idx] / self.temperature) / \
-            (np.exp(self.value_option0[idx] / self.temperature) +
-             np.exp(self.value_option1[idx] / self.temperature))
+            1 / \
+            (1 + np.exp( - (self.value_option0[idx] - self.value_option1[idx])/ self.temperature))
 
         random_number = np.random.random()  # Generate random number
 
@@ -498,6 +505,8 @@ cdef class Economy(object):
         #  choose option 0 otherwise
         self.choice[idx] = random_number >= probability_of_choosing_option0
         self.i_choice[idx] = (self.decision[idx] * 2) + self.choice[idx]
+
+        self.exchange_counter[self.type[idx]] += 1
        
         if self.i_choice[idx] == 0:
             
@@ -511,34 +520,26 @@ cdef class Economy(object):
 
     def compute_choices_proportions(self):
 
-        '''
-        Find proproption of choice leading to a direct exchange
-        :return:
-        '''
+        if self.exchange_counter.all() > 0:
 
-        for i in [0, 1, 2]:
-            
-            self.direct_choices_proportions[i] = \
-                self.direct_exchange[i] / (self.direct_exchange[i] +
-                                                self.indirect_exchange[i])
-                
-            self.indirect_choices_proportions[i] = \
-               self.indirect_exchange[i] / (self.direct_exchange[i] +
-                                                self.indirect_exchange[i])
+            self.direct_choices_proportions[:] = \
+                self.direct_exchange[:] / self.exchange_counter[:]
 
-    def append_choices_to_compute_means(self):
+            self.indirect_choices_proportions[:] = \
+                self.indirect_exchange[:] / self.exchange_counter[:]
+        else:
 
-        for i in [0, 1, 2]:
-            self.choices_list[str(i)].append(self.direct_choices_proportions[i])
+            for i in range(3):
 
-    def compute_choices_means(self):
+                if self.exchange_counter[i] > 0:
+                    self.direct_choices_proportions[i] = \
+                        self.direct_exchange[i] / self.exchange_counter[i]
+                    self.indirect_choices_proportions[i] = \
+                        self.indirect_exchange[i] / self.exchange_counter[i]
+                else:
+                    self.direct_choices_proportions[i] = 0
+                    self.indirect_choices_proportions[i] = 0
 
-        list_mean = []
-
-        for i in range(3):
-            list_mean.append(np.mean(self.choices_list[str(i)]))
-
-        return list_mean
 
 
     # ---------------------------------------------||| MAIN RUNNER |||---------------------------------------------------- #
@@ -548,16 +549,29 @@ class SimulationRunner(object):
 
     @staticmethod
     def launch_economy(parameters, graphics=1):
+
+        cdef:
+            int t, t_max, idx
+            cnp.ndarray croissant_order, random_order, direct_exchanges_proportions, indirect_exchanges_proportions
        
         tqdm_gui.write("Producing data...")
 
         eco = Economy(parameters)
-        map_limits = parameters["map_limits"]
 
-        list_saving_map = list()
-        matrix_list = [[], ] * 3
-        direct_exchanges_proportions_list = list()
-        indirect_exchanges_proportions_list= list()
+        t_max = parameters["t_max"]
+
+        if graphics:
+            map_height = parameters["height"]
+            map_width = parameters["width"]
+            list_saving_map = list()
+            matrix_list = [[], ] * 3
+
+        direct_exchanges_proportions = np.zeros((t_max, 3))
+        indirect_exchanges_proportions = np.zeros((t_max, 3))
+
+        croissant_order = np.arange(eco.n, dtype=int)
+        random_order = np.zeros(eco.n, dtype=int)
+
         # Place agents and stuff...
         eco.setup()
 
@@ -566,11 +580,13 @@ class SimulationRunner(object):
             # Save initial positions
             list_saving_map.append(eco.saving_map.copy())
 
-        for t in tqdm(range(parameters["t_max"])):
+        for t in tqdm(range(t_max)):
 
             eco.reset()
 
-            for idx in range(eco.n):
+            random_order[:] = np.random.permutation(croissant_order)
+
+            for idx in random_order:
 
                 # move agent, then make them proceeding to exchange
                 eco.move(idx)
@@ -583,7 +599,7 @@ class SimulationRunner(object):
 
                     for i in range(3):
                         # create empty matrix
-                        matrix = np.zeros((map_limits["height"], map_limits["width"]))
+                        matrix = np.zeros((map_height, map_width))
 
                         # fill the matrix with the exchanges positions
                         matrix[:] = eco.exchange_matrix[str(i)][:]
@@ -601,27 +617,21 @@ class SimulationRunner(object):
 
             # for each "t" we compute the proportion of direct choices
             eco.compute_choices_proportions()
-
-            # We append it to a list (in the fonction)
-            eco.append_choices_to_compute_means()
-
-            # We copy proportions and add them to a list
-            proportions = {"direct":eco.direct_choices_proportions.copy(),
-                           "indirect":eco.indirect_choices_proportions.copy()} 
             
-            direct_exchanges_proportions_list.append(proportions["direct"])
-            indirect_exchanges_proportions_list.append(proportions["indirect"])
+            direct_exchanges_proportions[t, :] = eco.direct_choices_proportions.copy()
+            indirect_exchanges_proportions[t, :] = eco.indirect_choices_proportions.copy()
 
         # Finally we compute the direct choices mean for each type
         # of agent and return it as well as the direct choices proportions
 
-        list_mean = eco.compute_choices_means()
-
-        result = {"direct_choices": direct_exchanges_proportions_list,
-                  "indirect_choices": indirect_exchanges_proportions_list,
-                  "list_mean": list_mean,
-                  "matrix_list": matrix_list,
-                  "list_map": list_saving_map}
+        if graphics:
+            result = {"direct_choices": direct_exchanges_proportions,
+                      "indirect_choices": indirect_exchanges_proportions,
+                      "matrix_list": matrix_list,
+                      "list_map": list_saving_map}
+        else:
+            result = {"direct_choices": direct_exchanges_proportions,
+                      "indirect_choices": indirect_exchanges_proportions}
 
         tqdm_gui.write("\nDone!")
 
@@ -630,41 +640,44 @@ class SimulationRunner(object):
     @staticmethod
     def multi_launch_economy(parameters):
 
-        eco = Economy(parameters)
-        map_limits = parameters["map_limits"]
+        cdef:
+            int t, t_max, idx
+            cnp.ndarray croissant_order, random_order, direct_exchanges_proportions, indirect_exchanges_proportions
 
-        direct_exchanges_proportions_list = list()
-        indirect_exchanges_proportions_list= list()
+        eco = Economy(parameters)
+
+        t_max = parameters["t_max"]
+
+        direct_exchanges_proportions = np.zeros((t_max, 3))
+        indirect_exchanges_proportions = np.zeros((t_max, 3))
+
+        croissant_order = np.arange(eco.n, dtype=int)
+        random_order = np.zeros(eco.n, dtype=int)
+
         # Place agents and stuff...
         eco.setup()
             
-        for t in range(parameters["t_max"]):
+        for t in range(t_max):
              
             eco.reset()
 
-            for idx in range(eco.n):
+            random_order[:] = np.random.permutation(croissant_order)
+
+            for idx in random_order:
 
                 # move agent, then make them proceeding to exchange
                 eco.move(idx)
                 eco.encounter(idx)
 
             # ---------- #
-            # Do some stats...
 
-            # for each "t" we compute the proportion of direct choices
+            # Do some stats...
             eco.compute_choices_proportions()
 
-            # We append it to a list (in the fonction)
-            eco.append_choices_to_compute_means()
+            direct_exchanges_proportions[t, :] = eco.direct_choices_proportions.copy()
+            indirect_exchanges_proportions[t, :] = eco.indirect_choices_proportions.copy()
 
-            # We copy proportions and add them to a list
-            proportions = {"direct":eco.direct_choices_proportions.copy(),
-                           "indirect":eco.indirect_choices_proportions.copy()}
-
-            direct_exchanges_proportions_list.append(proportions["direct"])
-            indirect_exchanges_proportions_list.append(proportions["indirect"])
-
-        result = {"direct_choices": direct_exchanges_proportions_list,
-                  "indirect_choices": indirect_exchanges_proportions_list}
+        result = {"direct_choices": direct_exchanges_proportions,
+                  "indirect_choices": indirect_exchanges_proportions}
 
         return result

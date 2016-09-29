@@ -12,22 +12,22 @@ class ParametersGenerator(object):
     def __init__(self):
 
         self.alpha_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
-        self.tau_list = [0.01, 0, 0.15, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
-        self.vision_list = [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
-        self.area_list = [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
+        self.tau_list = [0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
+        self.vision_area_list = [1, 2, 4, 8, 12, 16, 20, 24, 28, 30]
+        self.movement_area_list = [1, 2, 4, 8, 12, 16, 20, 24, 28, 30]
 
         self.stride = 1
         self.t_max = 1000
         self.width = 30
         self.height = 30
 
-        self.workforce_step = 10
+        self.workforce_step = 20
         self.workforce_mini = 50
         self.workforce_maxi = 150
     
         self.date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
 
-        self.nb_sub_list = 1000
+        self.nb_sub_list = 5000
 
         self.folders = Folders.folders
 
@@ -99,20 +99,23 @@ class ParametersGenerator(object):
 
                 for tau in self.tau_list:
 
-                    for vision in self.vision_list:
+                    for vision_area in self.vision_area_list:
 
-                        for area in self.area_list:
+                        for movement_area in self.movement_area_list:
                             parameters = \
                                 {
-                                    "workforce": np.array(workforce, dtype=int),
+                                    "x0": workforce[0],
+                                    "x1": workforce[1],
+                                    "x2": workforce[2],
                                     "alpha": alpha,  # Set the coefficient learning
                                     "tau": tau,  # Set the softmax parameter.
                                     "t_max": self.t_max,  # Set the number of time units the simulation will run
                                     # by each agent a at each round
                                     "stride": self.stride,
-                                    "vision": vision,
-                                    "area": area,  # set the perimeter within each agent can move
-                                    "map_limits": {"width": self.width, "height": self.height},
+                                    "vision_area": vision_area,
+                                    "movement_area": movement_area,  # set the perimeter within each agent can move
+                                    "width": self.width, 
+                                    "height": self.height,
                                     "idx": idx,
                                     "date": self.date
 
@@ -131,23 +134,35 @@ class ParametersGenerator(object):
         print("N slices of input parameters:", self.nb_sub_list)
         print("N simulations parameters per slice:", sub_part)
 
-        cursor = 0
+        response = input("Do you want to proceed?")
 
-        for i in range(self.nb_sub_list):
+        while response not in ['y', 'yes', 'n', 'no', 'Y', 'N']:
+            response = input("You can only respond by 'yes' or 'no'.")
 
-            part = parameters_list[cursor:cursor + sub_part]
-            parameters_dict[i] = part
-            cursor += sub_part
+        if response in ['y', 'yes', 'Y']:
 
-        while cursor < len(parameters_list):
+            print("Proceeding...")
+
+            cursor = 0
 
             for i in range(self.nb_sub_list):
 
-                if cursor < len(parameters_list):
-                    parameters_dict[i].append(parameters_list[cursor])
-                    cursor += 1
+                part = parameters_list[cursor:cursor + sub_part]
+                parameters_dict[i] = part
+                cursor += sub_part
 
-        return parameters_dict
+            while cursor < len(parameters_list):
+
+                for i in range(self.nb_sub_list):
+
+                    if cursor < len(parameters_list):
+                        parameters_dict[i].append(parameters_list[cursor])
+                        cursor += 1
+
+            return parameters_dict
+
+        else:
+            raise SystemExit("Process aborted by user.")
 
     def save_parameters_dict(self, parameters_dict):
         
@@ -182,9 +197,6 @@ class ParametersGenerator(object):
     #
     def run(self):
 
-        self.empty_scripts_folder()
-        self.create_folders()
-
         print("Generate parameters list...")
 
         workforce_list = self.generate_workforce_list()
@@ -192,6 +204,9 @@ class ParametersGenerator(object):
         parameters_list = self.generate_parameters_list(workforce_list=workforce_list)
 
         parameters_dict = self.generate_parameters_dict(parameters_list)
+
+        self.empty_scripts_folder()
+        self.create_folders()
 
         self.save_parameters_dict(parameters_dict)
         print("Generate scripts...")
