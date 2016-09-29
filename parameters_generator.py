@@ -27,7 +27,7 @@ class ParametersGenerator(object):
     
         self.date = str(datetime.now())[:-10].replace(" ", "_").replace(":", "-")
 
-        self.nb_sub_list = 500
+        self.nb_sub_list = 1000
 
         self.folders = Folders.folders
 
@@ -127,6 +127,9 @@ class ParametersGenerator(object):
         parameters_dict = {}
 
         sub_part = int(len(parameters_list) / self.nb_sub_list)
+        print("N simulations:", len(parameters_list))
+        print("N slices of input parameters:", self.nb_sub_list)
+        print("N simulations parameters per slice:", sub_part)
 
         cursor = 0
 
