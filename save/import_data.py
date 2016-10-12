@@ -2,22 +2,14 @@ import pickle
 from arborescence.arborescence import Folders
 
 
-def import_data(suffix):
+def import_data(suffix, data_folder=Folders.folders["data"]):
 
-    parameters = pickle.load(open("{}/parameters_{}.p".format(Folders.folders["data"], suffix), mode="rb"))
+    parameters = pickle.load(open("{}/parameters/parameters_{}.p".format(data_folder, suffix), mode="rb"))
     # print(parameters)
 
     direct_exchange = pickle.load(
-        open("{}/direct_exchanges_{}.p".format(Folders.folders["data"], suffix), mode="rb"))
+        open("{}/exchanges/direct_exchanges_{}.p".format(data_folder, suffix), mode="rb"))
     indirect_exchange = pickle.load(
-        open("{}/indirect_exchanges_{}.p".format(Folders.folders["data"], suffix), mode="rb"))
+        open("{}/exchanges/indirect_exchanges_{}.p".format(data_folder, suffix), mode="rb"))
 
     return parameters, direct_exchange, indirect_exchange
-
-
-def import_parameters(suffix):
-
-    parameters = pickle.load(
-        open("{}/parameters_{}.p".format(Folders.folders["data"], suffix), mode="rb"))
-    # print(parameters)
-    return parameters

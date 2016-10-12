@@ -5,10 +5,9 @@ from save.database import Database
 from arborescence.arborescence import Folders
 
 
-
 def merge_db(db_folder, new_db_name, db_to_merge):
 
-    assert path.exists(db_folder), '`{}` is a wrong path to db folder, please correct it.'.format(data_folder)
+    assert path.exists(db_folder), '`{}` is a wrong path to db folder, please correct it.'.format(db_folder)
 
     new_db = Database(folder=db_folder, database_name=new_db_name)
 
@@ -35,7 +34,7 @@ def merge_all_db_from_same_folder(db_folder, new_db_name):
     assert path.exists(db_folder), 'Wrong path to db folder, please correct it.'
 
     # Get the list of all the databases
-    list_db_name = [i[:-3] for i in listdir(db_folder) if i[-3:] == ".db"]
+    list_db_name = [i[:-3] for i in listdir(db_folder) if i[-3:] == ".db" and i[:-3] != new_db_name]
     assert len(list_db_name), 'Could not find any db...'
 
     merge_db(db_folder=db_folder, new_db_name=new_db_name, db_to_merge=list_db_name)
