@@ -18,7 +18,8 @@ def merge_db(db_folder, new_db_name, db_to_merge):
 
             columns = db.get_columns(table_name)
             content = db.read_n_rows(table_name=table_name, columns=columns)
-
+            if new_db.has_table(table_name=table_name):
+                new_db.remove_table(table_name=table_name)
             new_db.create_table(table_name=table_name, columns=columns)
             new_db.write_n_rows(table_name=table_name, columns=columns, array_like=content)
 
