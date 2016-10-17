@@ -52,7 +52,8 @@ def example_of_merging_db_from_list_of_db():
 def main():
 
     db_folder = Folders.folders["data"]
-    new_db_name = "data_{}".format(str(date.today()).replace("-", "_"))
+    # new_db_name = "data_{}".format(str(date.today()).replace("-", "_"))
+    new_db_name = "data_2016_10_12"
 
     merge_all_db_from_same_folder(db_folder=db_folder, new_db_name=new_db_name)
 
