@@ -7,7 +7,6 @@ from save.database import Database
 from os import path
 
 
-
 class BackUp(object):
 
     @classmethod
@@ -67,16 +66,14 @@ class BackUp(object):
 
         parameters_table = "parameters_{}".format(idx)
 
-        db.create_table(table_name=parameters_table,
-                        columns=columns)
-
         param_to_save = [[]]
         for column_name in columns.keys():
             param_to_save[0].append(parameters[column_name])
 
-        db.write_n_rows(table_name=parameters_table,
-                        columns=columns,
-                        array_like=param_to_save)
+        db.create_table_and_write_n_rows(
+            table_name=parameters_table,
+            columns=columns,
+            array_like=param_to_save)
 
     @classmethod
     def save_exchanges(cls, db, idx, direct_exchanges, indirect_exchanges):
@@ -90,19 +87,15 @@ class BackUp(object):
         direct_exchanges_table = "direct_exchanges_{}".format(idx)
         indirect_exchanges_table = "indirect_exchanges_{}".format(idx)
 
-        db.create_table(table_name=direct_exchanges_table,
-                        columns=columns)
+        db.create_table_and_write_n_rows(
+            table_name=direct_exchanges_table,
+            columns=columns,
+            array_like=direct_exchanges)
 
-        db.create_table(table_name=indirect_exchanges_table,
-                        columns=columns)
-
-        db.write_n_rows(table_name=direct_exchanges_table,
-                        columns=columns,
-                        array_like=direct_exchanges)
-
-        db.write_n_rows(table_name=indirect_exchanges_table,
-                        columns=columns,
-                        array_like=indirect_exchanges)
+        db.create_table_and_write_n_rows(
+            table_name=indirect_exchanges_table,
+            columns=columns,
+            array_like=indirect_exchanges)
 
     @classmethod
     def save_graphic_data(cls, results, saving_name, folders):

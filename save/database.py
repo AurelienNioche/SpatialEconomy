@@ -12,6 +12,8 @@ class Database(object):
         self.connexion = connect(self.db_path)
         self.cursor = self.connexion.cursor()
 
+        self.is_close = 0
+
     def create_table(self, table_name, columns):
 
         assert type(columns) == dict or type(columns) == OrderedDict, \
@@ -27,15 +29,13 @@ class Database(object):
         query = query[:-2]
         query += ")"
         self.write(query)
-        self.connexion.commit()
+        # self.connexion.commit()
 
-    def remove_table(self, table_name='data'):
+    def remove_table(self, table_name):
 
-        if self.has_table(table_name):
-
-            q = "DROP TABLE `{}`".format(table_name)
-            self.cursor.execute(q)
-            self.connexion.commit()
+        q = "DROP TABLE `{}`".format(table_name)
+        self.cursor.execute(q)
+        # self.connexion.commit()
 
     def has_table(self, table_name):
 
@@ -88,11 +88,7 @@ class Database(object):
 
     def write(self, query):
 
-        try:
-            self.cursor.execute(query)
-        except OperationalError as e:
-            print("Error with query: ", query)
-            raise e
+        self.cursor.execute(query)
 
     def read_n_rows(self, columns, table_name='data'):
 
@@ -127,9 +123,51 @@ class Database(object):
         fill_query += ")"
 
         self.cursor.executemany(fill_query, array_like)
-        self.connexion.commit()
+        # self.connexion.commit()
+
+    def create_table_and_write_n_rows(self, columns, array_like, table_name='data'):
+
+        assert type(columns) == dict or type(columns) == OrderedDict, \
+            "Columns type should be dict such dict or OrderedDict with as keys names and as values types in string"
+
+        create_table_query = \
+            "CREATE TABLE `{}` (" \
+            "ID INTEGER PRIMARY KEY, ".format(table_name)
+
+        for key, value in columns.items():
+            create_table_query += "`{}` {}, ".format(key, value)
+
+        create_table_query = create_table_query[:-2]
+        create_table_query += ")"
+
+        fill_query = "INSERT INTO '{}' (".format(table_name)
+
+        for i in columns.keys():
+
+            fill_query += "`{}`, ".format(i)
+
+        fill_query = fill_query[:-2]
+        fill_query += ") VALUES ("
+
+        for i in range(len(columns)):
+            fill_query += "?, "
+
+        fill_query = fill_query[:-2]
+        fill_query += ")"
+
+        self.cursor.execute(create_table_query)
+        self.cursor.executemany(fill_query, array_like)
 
     def close(self):
 
         self.connexion.commit()
         self.connexion.close()
+
+        self.is_close = 1
+
+        # print("Database {} is closed.".format(self.db_path))
+
+    def __del__(self):
+        if not self.is_close:
+
+            self.close()
