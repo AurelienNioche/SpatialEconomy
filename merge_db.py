@@ -2,10 +2,9 @@ from os import path, listdir, remove
 from tqdm import tqdm
 import numpy as np
 from datetime import date
-from multiprocessing import Process, Queue, Event, Value
+from multiprocessing import Process, SimpleQueue, Event, Value
 from save.database import Database
 from arborescence.arborescence import Folders
-from time import time
 
 
 class Writer(Process):
@@ -14,7 +13,7 @@ class Writer(Process):
 
         Process.__init__(self)
 
-        self.db = Database(folder=db_folder, database_name=db_name)
+        self.db = Database(folder=db_folder, name=db_name)
         self.queue = queue
         self.shutdown = shutdown
         self.counter = Value('i', 0)
@@ -25,6 +24,8 @@ class Writer(Process):
 
     def run(self):
 
+        already_existing_tables = self.db.get_tables_names()
+
         while not self.shutdown.is_set():
 
             try:
@@ -34,21 +35,17 @@ class Writer(Process):
                 if param is not None:
                     if param[0] == "write":
 
-                        # # print("Begin to write")
-
-                        a = time()
-
                         table_name, columns, content = param[1]
+
+                        if table_name in already_existing_tables:
+                            self.db.remove_table(table_name=table_name)
+                            self.db.connexion.commit()
+
                         self.db.create_table_and_write_n_rows(table_name=table_name, columns=columns,
                                                               array_like=content)
 
-                        b = time()
-                        # print("Time for writing table {}: {}".format(table_name, b-a))
+                        already_existing_tables.append(table_name)
 
-                    elif param[0] == "remove_table":
-
-                        table_name = param[1]
-                        self.db.remove_table(table_name)
                     elif param[0] == "remove_db":
 
                         old_db_name = param[1]
@@ -58,24 +55,25 @@ class Writer(Process):
                         raise Exception("Bad argument for writer queue.")
                 else:
                     break
+
             except KeyboardInterrupt:
-                # print("Close new db.")
+
+                print()
+                print("Writer grab keyboard interrupt.")
                 if not self.db.is_close:
                     self.db.close()
 
         if not self.db.is_close:
             self.db.close()
-            # print("New db closed.")
         self.shutdown.set()
-        # print("Writer: DEAD.")
+        print("Writer: DEAD.")
 
 
 class Reader(Process):
 
-    def __init__(self, db_folder, db_to_merge, already_existing_tables, queue, shutdown):
+    def __init__(self, db_folder, db_to_merge, queue, shutdown):
 
         Process.__init__(self)
-        self.already_existing_tables = already_existing_tables
         self.db_folder = db_folder
         self.db_to_merge = db_to_merge
         self.shutdown = shutdown
@@ -85,40 +83,40 @@ class Reader(Process):
 
         for db_name in self.db_to_merge:
 
-            try:
+            if not self.shutdown.is_set():
 
-                if not self.shutdown.is_set():
+                db = Database(folder=self.db_folder, name=db_name)
 
-                    db = Database(folder=self.db_folder, database_name=db_name)
+                try:
+
                     db_tables_names = db.get_tables_names()
 
-                    intersect_with_new_db = np.intersect1d(self.already_existing_tables, db_tables_names)
-
-                    for table_name in intersect_with_new_db:
-                        self.writer_queue.put(["remove_table", table_name])
-
                     for table_name in db_tables_names:
-                        # a = time()
 
-                        columns = db.get_columns(table_name)
-                        content = db.read_n_rows(table_name=table_name, columns=columns)
-
-                        # b = time()
-
-                        # # print("time for reading a table:", b - a)
-
-                        self.writer_queue.put(["write", [table_name, columns, content]])
+                        if not self.shutdown.is_set():
+                            columns = db.get_columns(table_name)
+                            content = db.read_n_rows(table_name=table_name, columns=columns)
+                            self.writer_queue.put(["write", [table_name, columns, content]])
+                        else:
+                            break
 
                     db.close()
+
                     old_db_name = "{}/{}.db".format(self.db_folder, db_name)
                     self.writer_queue.put(["remove_db", old_db_name])
-            except KeyboardInterrupt:
 
+                except KeyboardInterrupt:
+                    print()
+                    print("Reader grab keyboard interrupt.")
+                    break
+
+            else:
                 break
 
-        self.writer_queue.put(None)
+        if not self.shutdown.is_set():
+            self.writer_queue.put(None)
 
-        print("Writer: DEAD.")
+        print("Reader: DEAD.")
 
 
 def merge_db(db_folder, new_db_name, db_to_merge):
@@ -126,34 +124,56 @@ def merge_db(db_folder, new_db_name, db_to_merge):
     assert path.exists(db_folder), '`{}` is a wrong path to db folder, please correct it.'.format(db_folder)
 
     shutdown = Event()
+    writer_queue = SimpleQueue()
 
-    try:
+    writer = Writer(db_folder=db_folder, db_name=new_db_name, queue=writer_queue, shutdown=shutdown)
+    reader = Reader(db_folder=db_folder, db_to_merge=db_to_merge,
+                    queue=writer_queue, shutdown=shutdown)
 
-        writer_queue = Queue()
-        writer = Writer(db_folder=db_folder, db_name=new_db_name, queue=writer_queue, shutdown=shutdown)
-        already_existing_tables = writer.get_tables_names()
+    reader.start()
+    writer.start()
 
-        reader = Reader(db_folder=db_folder, db_to_merge=db_to_merge, already_existing_tables=already_existing_tables,
-                        queue=writer_queue, shutdown=shutdown)
+    pbar = tqdm(total=len(db_to_merge))
 
-        reader.start()
-        writer.start()
-
-        c = 0
-        pbar = tqdm(total=len(db_to_merge))
-        while not shutdown.is_set():
+    c = 0
+    while not shutdown.is_set():
+        try:
             new_c = writer.counter.value
             progress = new_c - c
             if progress > 0:
                 pbar.update(progress)
                 c = new_c
-            Event().wait(5)
+            Event().wait(2)
 
-        pbar.close()
+        except KeyboardInterrupt:
+            print()
+            print("Main thread grab the keyboard interrupt")
+            break
 
-    except KeyboardInterrupt:
+    shutdown.set()
+    pbar.close()
+    # writer.join()
+    # reader.join()
 
-        shutdown.set()
+    print("writer alive", writer.is_alive())
+    print("reader alive", reader.is_alive())
+
+    if writer.is_alive():
+
+        print("Waiting writer...")
+        writer.join()
+
+    print("WRITER EXECUTED")
+
+    if reader.is_alive():
+        print("Waiting reader...")
+        writer_queue.get()
+        print("Waiting reader 2...")
+        reader.join()
+
+    print("READER EXECUTED")
+
+    print("Done.")
 
 
 def merge_all_db_from_same_folder(db_folder, new_db_name):

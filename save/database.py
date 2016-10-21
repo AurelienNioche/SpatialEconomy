@@ -5,9 +5,9 @@ from collections import OrderedDict
 
 class Database(object):
 
-    def __init__(self, folder="../data", database_name="db"):
+    def __init__(self, folder="../data", name="db"):
 
-        self.db_path = "{}/{}.db".format(folder, database_name)
+        self.db_path = "{}/{}.db".format(folder, name)
 
         self.connexion = connect(self.db_path)
         self.cursor = self.connexion.cursor()
@@ -156,6 +156,7 @@ class Database(object):
         fill_query += ")"
 
         self.cursor.execute(create_table_query)
+
         self.cursor.executemany(fill_query, array_like)
 
     def close(self):
