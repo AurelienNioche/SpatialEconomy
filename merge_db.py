@@ -1,210 +1,150 @@
-from os import path, listdir, remove
-from tqdm import tqdm
-import numpy as np
+import apsw
+from sqlite3 import connect
 from datetime import date
-from multiprocessing import Process, SimpleQueue, Event, Value
-from save.database import Database
-from arborescence.arborescence import Folders
+from os import listdir, remove
+import numpy as np
+from tqdm import tqdm
 
 
-class Writer(Process):
+class DatabaseManager(object):
 
-    def __init__(self, db_folder, db_name, queue, shutdown):
+    @classmethod
+    def run(cls):
 
-        Process.__init__(self)
+        data_folder = "/Users/M-E4-ANIOCHE/Desktop/SpatialEconomy-data"
+        new_db_name = "data_{}".format(str(date.today()).replace("-", "_"))
+        new_db_folder = "/Users/M-E4-ANIOCHE/Desktop"
+        db_path = "{}/{}.db".format(new_db_folder, new_db_name)
 
-        self.db = Database(folder=db_folder, name=db_name)
-        self.queue = queue
-        self.shutdown = shutdown
-        self.counter = Value('i', 0)
+        # remove("{}/{}.db".format(new_db_folder, new_db_name))
 
-    def get_tables_names(self):
+        connection = connect(db_path)
+        cursor = connection.cursor()
 
-        return self.db.get_tables_names()
+        # Get the list of the databases containing data
+        list_db_name = [i for i in listdir(data_folder) if i[-3:] == ".db"]
 
-    def run(self):
+        # Create tables
 
-        already_existing_tables = self.db.get_tables_names()
+        for i in tqdm(list_db_name):
 
-        while not self.shutdown.is_set():
+            old_db_path = "{}/{}".format(data_folder, i)
 
-            try:
+            query = \
+                "ATTACH DATABASE '{}' As old;".format(old_db_path)
+            cursor.execute(query)
 
-                param = self.queue.get()
+            # cursor.execute("BEGIN")
 
-                if param is not None:
-                    if param[0] == "write":
+            query = "SELECT name FROM old.sqlite_master WHERE type='table'"
+            cursor.execute(query)
 
-                        table_name, columns, content = param[1]
+            table_names = [i[0] for i in cursor.fetchall()]
 
-                        if table_name in already_existing_tables:
-                            self.db.remove_table(table_name=table_name)
-                            self.db.connexion.commit()
+            if "sqlite_sequence" in table_names:
+                table_names.remove("sqlite_sequence")
 
-                        self.db.create_table_and_write_n_rows(table_name=table_name, columns=columns,
-                                                              array_like=content)
+            for j in table_names:
 
-                        already_existing_tables.append(table_name)
+                if j.startswith("parameters"):
 
-                    elif param[0] == "remove_db":
+                    # Create parameters table in new db
+                    query = \
+                        "CREATE TABLE IF NOT EXISTS `parameters` (`ID` INTEGER PRIMARY KEY, " \
+                        "`eco_idx` INTEGER, `vision_area` INTEGER, " \
+                        "`movement_area` INTEGER, `stride` INTEGER, " \
+                        "`width` INTEGER, `height` INTEGER , " \
+                        "`x0` INTEGER, `x1` INTEGER, `x2` INTEGER, " \
+                        "`alpha` REAL, `tau` REAL, `t_max` INTEGER);"
+                    cursor.execute(query)
 
-                        old_db_name = param[1]
-                        remove(old_db_name)
-                        self.counter.value += 1
-                    else:
-                        raise Exception("Bad argument for writer queue.")
                 else:
-                    break
 
-            except KeyboardInterrupt:
+                    query = "CREATE TABLE IF NOT EXISTS `exchanges_{}` (ID INTEGER PRIMARY KEY , " \
+                            "`exchange_type` TEXT, " \
+                            "`t` INTEGER, `x0` REAL, `x1` REAL, `x2` REAL);"\
+                        .format(j.split("_")[2])
+                    cursor.execute(query)
 
-                print()
-                print("Writer grab keyboard interrupt.")
-                if not self.db.is_close:
-                    self.db.close()
+            # cursor.execute("COMMIT")
+            query = \
+                "DETACH old"
+            cursor.execute(query)
 
-        if not self.db.is_close:
-            self.db.close()
-        self.shutdown.set()
-        print("Writer: DEAD.")
+        # Fill tables
+        idx_parameter = 0
 
+        for i in tqdm(list_db_name):
 
-class Reader(Process):
+            old_db_path = "{}/{}".format(data_folder, i)
 
-    def __init__(self, db_folder, db_to_merge, queue, shutdown):
+            query = \
+                "ATTACH DATABASE '{}' As old;".format(old_db_path)
+            cursor.execute(query)
 
-        Process.__init__(self)
-        self.db_folder = db_folder
-        self.db_to_merge = db_to_merge
-        self.shutdown = shutdown
-        self.writer_queue = queue
+            query = "SELECT name FROM old.sqlite_master WHERE type='table'"
+            cursor.execute(query)
 
-    def run(self):
+            table_names = [i[0] for i in cursor.fetchall()]
 
-        for db_name in self.db_to_merge:
+            if "sqlite_sequence" in table_names:
+                table_names.remove("sqlite_sequence")
 
-            if not self.shutdown.is_set():
+            for j in table_names:
 
-                db = Database(folder=self.db_folder, name=db_name)
+                query = "SELECT * FROM old.'{}';".format(j)
+                cursor.execute(query)
+                dat = cursor.fetchall()
 
-                try:
+                if j.startswith("parameters"):
 
-                    db_tables_names = db.get_tables_names()
+                    eco_idx = int(j.split("parameters_")[1])
 
-                    for table_name in db_tables_names:
+                    for d in dat:
+                        query = \
+                            "INSERT INTO `parameters` (`ID`, `eco_idx`, `vision_area`, " \
+                            "`movement_area`, `stride`, `width`, " \
+                            "`height`, `x0`, `x1`, `x2`, " \
+                            "`alpha`, `tau`, `t_max`" \
+                            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
 
-                        if not self.shutdown.is_set():
-                            columns = db.get_columns(table_name)
-                            content = db.read_n_rows(table_name=table_name, columns=columns)
-                            self.writer_queue.put(["write", [table_name, columns, content]])
-                        else:
-                            break
+                        cursor.execute(query, (idx_parameter, eco_idx) + d[1:])
 
-                    db.close()
+                        idx_parameter += 1
+                else:
 
-                    old_db_name = "{}/{}.db".format(self.db_folder, db_name)
-                    self.writer_queue.put(["remove_db", old_db_name])
+                    eco_idx = j.split("_")[2]
+                    exchange_type = j.split("_")[0]
 
-                except KeyboardInterrupt:
-                    print()
-                    print("Reader grab keyboard interrupt.")
-                    break
+                    query = "SELECT MAX(id) FROM exchanges_{}".format(eco_idx)
 
-            else:
-                break
+                    cursor.execute(query)
 
-        if not self.shutdown.is_set():
-            self.writer_queue.put(None)
+                    output = cursor.fetchone()
+                    if output[0] is None:
+                        idx = 0
+                    else:
+                        idx = output[0] + 1
 
-        print("Reader: DEAD.")
+                    for k, d in enumerate(dat):
 
+                        query = "INSERT INTO `exchanges_{}` (`ID`, `exchange_type`, `t`, `x0`, `x1`, `x2`) " \
+                                "VALUES (?, ?, ?, ?, ?, ?);".format(eco_idx)
 
-def merge_db(db_folder, new_db_name, db_to_merge):
+                        cursor.execute(query, (idx+k, exchange_type) + d)
 
-    assert path.exists(db_folder), '`{}` is a wrong path to db folder, please correct it.'.format(db_folder)
+            query = \
+                "DETACH old"
+            cursor.execute(query)
 
-    shutdown = Event()
-    writer_queue = SimpleQueue()
-
-    writer = Writer(db_folder=db_folder, db_name=new_db_name, queue=writer_queue, shutdown=shutdown)
-    reader = Reader(db_folder=db_folder, db_to_merge=db_to_merge,
-                    queue=writer_queue, shutdown=shutdown)
-
-    reader.start()
-    writer.start()
-
-    pbar = tqdm(total=len(db_to_merge))
-
-    c = 0
-    while not shutdown.is_set():
-        try:
-            new_c = writer.counter.value
-            progress = new_c - c
-            if progress > 0:
-                pbar.update(progress)
-                c = new_c
-            Event().wait(2)
-
-        except KeyboardInterrupt:
-            print()
-            print("Main thread grab the keyboard interrupt")
-            break
-
-    shutdown.set()
-    pbar.close()
-    # writer.join()
-    # reader.join()
-
-    print("writer alive", writer.is_alive())
-    print("reader alive", reader.is_alive())
-
-    if writer.is_alive():
-
-        print("Waiting writer...")
-        writer.join()
-
-    print("WRITER EXECUTED")
-
-    if reader.is_alive():
-        print("Waiting reader...")
-        writer_queue.get()
-        print("Waiting reader 2...")
-        reader.join()
-
-    print("READER EXECUTED")
-
-    print("Done.")
-
-
-def merge_all_db_from_same_folder(db_folder, new_db_name):
-
-    # Be sure that the path of the folder containing the databases is correct.
-    assert path.exists(db_folder), 'Wrong path to db folder, please correct it.'
-
-    # Get the list of all the databases
-    list_db_name = [i[:-3] for i in listdir(db_folder) if i[-3:] == ".db" and i[:-3] != new_db_name]
-    assert len(list_db_name), 'Could not find any db...'
-
-    merge_db(db_folder=db_folder, new_db_name=new_db_name, db_to_merge=list_db_name)
-
-
-def example_of_merging_db_from_list_of_db():
-
-    new_db = "new_db"
-    data_folder = "../data"
-    db_to_merge = ["2016_09_29_idx17", "2016_09_29_idx16"]
-    merge_db(db_folder=data_folder, new_db_name=new_db, db_to_merge=db_to_merge)
+        connection.commit()
+        connection.close()
 
 
 def main():
-
-    db_folder = Folders.folders["data"]
-    # new_db_name = "data_{}".format(str(date.today()).replace("-", "_"))
-    new_db_name = "data_2016_10_12"
-
-    merge_all_db_from_same_folder(db_folder=db_folder, new_db_name=new_db_name)
+    d = DatabaseManager()
+    d.run()
 
 
 if __name__ == "__main__":
-
     main()

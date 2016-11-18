@@ -32,7 +32,7 @@ class BackUp(object):
 
         saving_name = "{date}_idx{idx}".format(date=date, idx=idx)
 
-        db = Database(folder=folders["data"], database_name=saving_name)
+        db = Database(folder=folders["data"], name=saving_name)
 
         cls.save_parameters(db=db, idx=idx, parameters=parameters)
         cls.save_exchanges(db=db, idx=idx,
