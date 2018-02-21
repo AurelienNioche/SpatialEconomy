@@ -1,9 +1,8 @@
 *.swp
-*.pyc
-*.so
 *.c
 .idea/
 __pycache__/
 module/__pycache__/
-build/
-examples/
+
+*.mp4
+__old__/

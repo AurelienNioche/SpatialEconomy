@@ -5,7 +5,7 @@ import pickle
 from eco.c_economy import SimulationRunner
 from save.save_eco import BackUp
 from arborescence.arborescence import Folders
-from merge_db import merge_db
+from __old__.merge_db import merge_db
 
 
 def launch(parameters):

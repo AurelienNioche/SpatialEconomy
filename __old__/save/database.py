@@ -166,9 +166,4 @@ class Database(object):
 
         self.is_close = 1
 
-        # print("Database {} is closed.".format(self.db_path))
-
-    def __del__(self):
-        if not self.is_close:
-
-            self.close()
+        print("Database {} is closed.".format(self.db_path))
