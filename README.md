@@ -1,4 +1,4 @@
-# SpatialEconomy
+# SpatialMoney
 What happens with agents that can freely move on a map?
 
 For generating data on a calculation server:
