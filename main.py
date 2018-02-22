@@ -50,8 +50,6 @@ def main(t_max=2, map_height=10, map_width=10, graphics=False):
 
         for i in idx:
 
-            print("main:", i, type(i), "\n")
-
             # move agent, then make them proceeding to exchange
             eco.move(i)
             eco.encounter(i)
