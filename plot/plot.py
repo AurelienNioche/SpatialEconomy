@@ -84,7 +84,7 @@ class Plot:
 
 def main():
 
-    Plot(mode=Mode.ON_KEY_PRESS)
+    Plot(mode=Mode.DISPLAY)
 
 
 if __name__ == "__main__":

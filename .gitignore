@@ -6,3 +6,5 @@ module/__pycache__/
 
 *.mp4
 __old__/
+figures/
+data/

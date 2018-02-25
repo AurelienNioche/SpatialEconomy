@@ -60,7 +60,7 @@ class Model:
         self.workforce = np.array([x0, x1, x2], dtype=int)  # Number of agents by type
 
         self.alpha = alpha  # Learning coefficient
-        self.temperature = tau  # Softmax parameter
+        self.tau = tau  # Softmax parameter
 
         # Attributes for computation
 
@@ -163,8 +163,7 @@ class Model:
 
         self.setup()
 
-
-# --------------------------------------------------||| SETUP |||----------------------------------------------- #
+    # --------------------------------------------------||| SETUP |||----------------------------------------------- #
 
     def setup(self):
 
@@ -272,7 +271,7 @@ class Model:
 
         assert type(idx) in (np.int64, int)
 
-        print("Encounter:", idx, "\n")
+        # print("Encounter:", idx, "\n")
 
         occupied_nearby_positions = self.encounter_check_nearby_positions(idx)
         group_idx = self.encounter_look_for_partners(occupied_nearby_positions)
@@ -327,7 +326,7 @@ class Model:
 
     def encounter_look_for_partners_choices(self, idx, group_idx):
 
-        print("encounter_look_for_partners_choices:", idx, type(idx))
+        # print("encounter_look_for_partners_choices:", idx, type(idx))
         assert type(idx) in (np.int64, int)
 
         # The agent chooses the good he wants to obtain and asks agents around him for it
@@ -418,7 +417,7 @@ class Model:
 
     def choose(self, idx):
 
-        print("Choose", idx, type(idx))
+        # print("Choose", idx, type(idx))
 
         assert type(idx) in (np.int64, int)
 
@@ -435,10 +434,10 @@ class Model:
         self.value_ij[idx] = self.estimation[idx, 0]
         self.value_kj[idx] = self.estimation[idx, 0]
 
-        print("choose_update_options_values", type(idx), idx)
-        print(self.estimation.shape)
+        # print("choose_update_options_values", type(idx), idx)
+        # print(self.estimation.shape)
 
-        print(self.estimation[idx, 1] + self.estimation[idx, 2])
+        # print(self.estimation[idx, 1] + self.estimation[idx, 2])
         if not self.estimation[idx, 1] + self.estimation[idx, 2] == 0:
 
             self.value_ik[idx] = \
@@ -468,7 +467,7 @@ class Model:
 
         probability_of_choosing_option0 = \
             1 / \
-            (1 + np.exp(- (self.value_option0[idx] - self.value_option1[idx]) / self.temperature))
+            (1 + np.exp(- (self.value_option0[idx] - self.value_option1[idx]) / self.tau))
 
         random_number = np.random.random()  # Generate random number
 
@@ -516,8 +515,7 @@ class Model:
 
 def main():
 
-    m = Model()
-
+    Model()
 
 
 if __name__ == "__main__":
