@@ -1,4 +1,7 @@
-import numpy as np
+from pylab import np, plt
+import enum
+
+import analysis
 
 
 class MoneyAnalysis:
@@ -13,23 +16,22 @@ class MoneyAnalysis:
 
 class MoneyAnalyst(object):
 
-    def __init__(self):
+    money_threshold = .75
 
-        self.money_threshold = .90
-
-    def test_for_money_state(self, direct_exchange, indirect_exchange):
+    @classmethod
+    def _test_for_money_state(cls, direct_exchange, indirect_exchange):
 
         money = -1
 
         # Money = 0?
         # type '0' should use direct exchange
-        cond0 = direct_exchange[0] > self.money_threshold
+        cond0 = direct_exchange[0] > cls.money_threshold
 
         # type '1' should use indirect exchange
-        cond1 = indirect_exchange[1] > self.money_threshold
+        cond1 = indirect_exchange[1] > cls.money_threshold
 
         # type '2' should use direct exchange
-        cond2 = direct_exchange[2] > self.money_threshold
+        cond2 = direct_exchange[2] > cls.money_threshold
 
         if (cond0 * cond1 * cond2) == 1:
 
@@ -38,9 +40,9 @@ class MoneyAnalyst(object):
         else:
 
             # Money = 1?
-            cond0 = direct_exchange[0] > self.money_threshold
-            cond1 = direct_exchange[1] > self.money_threshold
-            cond2 = indirect_exchange[2] > self.money_threshold
+            cond0 = direct_exchange[0] > cls.money_threshold
+            cond1 = direct_exchange[1] > cls.money_threshold
+            cond2 = indirect_exchange[2] > cls.money_threshold
 
             if (cond0 * cond1 * cond2) == 1:
 
@@ -49,38 +51,112 @@ class MoneyAnalyst(object):
             else:
 
                 # Money = 2?
-                cond0 = indirect_exchange[0] > self.money_threshold
-                cond1 = direct_exchange[1] > self.money_threshold
-                cond2 = direct_exchange[2] > self.money_threshold
+                cond0 = indirect_exchange[0] > cls.money_threshold
+                cond1 = direct_exchange[1] > cls.money_threshold
+                cond2 = direct_exchange[2] > cls.money_threshold
 
                 if (cond0 * cond1 * cond2) == 1:
                     money = 2
 
         return money
 
-    def analyse(self, direct_exchange, indirect_exchange, t_max):
+    @classmethod
+    def run(cls, direct_exchange, indirect_exchange, t_max):
 
-        money_timeline = np.zeros(t_max)
+        money_time_line = np.zeros(t_max)
         money = {0: 0, 1: 0, 2: 0, -1: 0}
         interruptions = 0
 
         for t in range(t_max):
 
-            money_t = self.test_for_money_state(direct_exchange=direct_exchange[t],
-                                                indirect_exchange=indirect_exchange[t])
-            money_timeline[t] = money_t
+            money_t = cls._test_for_money_state(
+                direct_exchange=direct_exchange[t],
+                indirect_exchange=indirect_exchange[t])
+            money_time_line[t] = money_t
             money[money_t] += 1
 
             if t > 0:
 
                 cond0 = money_t == -1
-                cond1 = money_timeline[t-1] != -1
+                cond1 = money_time_line[t-1] != -1
                 interruptions += cond0 * cond1
 
         return MoneyAnalysis(
-            m0=money[0], m1=money[1], m2=money[2],
+            m0=money[0],
+            m1=money[1],
+            m2=money[2],
             interruptions=interruptions)
 
 
-def run():
-    pass
+class X(enum.Enum):
+
+    alpha = enum.auto()
+    tau = enum.auto()
+    vision_area = enum.auto()
+    x = enum.auto()
+
+
+def run(results_pool):
+
+    parameters = results_pool.parameters
+    data = results_pool.data
+
+    x = {
+        X.alpha: [],
+        X.tau: [],
+        X.vision_area: [],
+        X.x: []
+    }
+    y = []
+
+    for d in data:
+        a = MoneyAnalyst.run(
+            t_max=parameters.t_max,
+            direct_exchange=d.direct_exchanges_proportions,
+            indirect_exchange=d.indirect_exchanges_proportions
+        )
+
+        x[X.vision_area].append(d.parameters.vision_area)
+        x[X.tau].append(d.parameters.tau)
+        x[X.alpha].append(d.parameters.alpha)
+        x[X.x].append(d.parameters.x0 + d.parameters.x1 + d.parameters.x2)
+
+        y.append(
+            a.m0 + a.m1 + a.m2
+        )
+
+    fig = plt.figure(figsize=(10, 10))
+
+    ax = fig.add_subplot(221)
+    ax.scatter(x[X.tau], y, c="black", alpha=0.4, s=15)
+    ax.set_ylabel("n monetary states")
+    ax.set_xlabel(r"$\tau$")
+
+    ax = fig.add_subplot(222)
+    ax.scatter(x[X.alpha], y, c="black", alpha=0.4, s=15)
+    ax.set_ylabel("n monetary states")
+    ax.set_xlabel(r"$\alpha$")
+
+    ax = fig.add_subplot(223)
+    ax.scatter(x[X.vision_area], y, c="black", alpha=0.4, s=15)
+    ax.set_ylabel("n monetary states")
+    ax.set_xlabel(r"vision area")
+
+    ax = fig.add_subplot(223)
+    ax.scatter(x[X.vision_area], y, c="black", alpha=0.4, s=15)
+    ax.set_ylabel("n monetary states")
+    ax.set_xlabel(r"vision area")
+
+    ax = fig.add_subplot(224)
+    ax.scatter(x[X.x], y, c="black", alpha=0.4, s=15)
+    ax.set_ylabel("n monetary states")
+    ax.set_xlabel(r"n agents")
+
+    plt.text(0.005, 0.005, results_pool.file_name, transform=fig.transFigure, fontsize='x-small', color='0.5')
+
+    plt.tight_layout()
+
+    plt.savefig("{}/separate_indirect_exchanges_proportions_{}.pdf"
+                .format(analysis.parameters.fig_folder, results_pool.file_name))
+
+    plt.show()

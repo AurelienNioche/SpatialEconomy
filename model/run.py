@@ -7,7 +7,7 @@ from . import model, data_structure
 def run(t_max=600, map_height=30, map_width=30,
         alpha=0.4, tau=0.01, movement_area=6, vision_area=15,
         x0=65, x1=65, x2=65, stride=1, seed=np.random.randint(0, 2**32-1),
-        graphics=False):
+        graphics=False, multi=False):
 
     np.random.seed(seed)
 
@@ -39,7 +39,12 @@ def run(t_max=600, map_height=30, map_width=30,
         # Save initial positions
         agent_maps[0] = eco.agent_map.copy()
 
-    for t in tqdm.tqdm(range(t_max)):
+    if multi:
+        iterable = range(t_max)
+    else:
+        iterable = tqdm.tqdm(range(t_max))
+
+    for t in iterable:
 
     #for t in range(t_max):
 
