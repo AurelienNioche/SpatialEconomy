@@ -1,7 +1,17 @@
 import numpy as np
 
 
-class MoneyAnalysis(object):
+class MoneyAnalysis:
+
+    def __init__(self, m0, m1, m2, interruptions):
+
+        self.m0 = m0
+        self.m1 = m1
+        self.m2 = m2
+        self.interruptions = interruptions
+
+
+class MoneyAnalyst(object):
 
     def __init__(self):
 
@@ -67,13 +77,9 @@ class MoneyAnalysis(object):
                 cond1 = money_timeline[t-1] != -1
                 interruptions += cond0 * cond1
 
-        return {
-            "m0": money[0],
-            "m1": money[1],
-            "m2": money[2],
-            "m_sum": money[0] + money[1] + money[2],
-            "interruptions": interruptions
-        }
+        return MoneyAnalysis(
+            m0=money[0], m1=money[1], m2=money[2],
+            interruptions=interruptions)
 
 
 def run():

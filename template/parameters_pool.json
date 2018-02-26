@@ -1,0 +1,19 @@
+{
+  "t_max": 200,
+  "map_height": 10,
+  "map_width": 10,
+  "alpha_min": 0.5,
+  "alpha_max": 0.1,
+  "tau_min": 0.01,
+  "tau_max": 0.03,
+  "movement_area_min": 2,
+  "movement_area_max": 4,
+  "vision_area_min": 2,
+  "vision_area_max": 4,
+  "x_min": 10,
+  "x_max": 30,
+  "stride_min": 0,
+  "stride_max": 1,
+  "n": 100,
+  "seed": 0
+}

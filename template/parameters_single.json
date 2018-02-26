@@ -1,0 +1,14 @@
+{
+  "x0": 10,
+  "x1": 10,
+  "x2": 10,
+  "stride": 1,
+  "movement_area": 3,
+  "vision_area": 4,
+  "alpha": 0.4,
+  "tau": 0.01,
+  "map_width": 10,
+  "map_height": 10,
+  "t_max": 100,
+  "seed": 1082153601
+}

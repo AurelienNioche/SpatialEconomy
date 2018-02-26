@@ -28,12 +28,13 @@ def draw(indirect_exchanges_proportions, parameters, file_name):
     ax.legend(loc='upper right', fontsize=12)
 
     ax.set_title(
-        "\nWorkforce: {}, {}, {}; displacement area: {};\nvision area: {};   alpha: {};   tau: {}\n"
+        "\nWorkforce: {}, {}, {}; movement area: {} stride: {};\nvision area: {};   alpha: {};   tau: {}\n"
         .format(
             parameters.x0,
             parameters.x1,
             parameters.x2,
             parameters.movement_area,
+            parameters.stride,
             parameters.vision_area,
             parameters.alpha,
             parameters.tau
@@ -42,5 +43,7 @@ def draw(indirect_exchanges_proportions, parameters, file_name):
     if file_name:
         plt.text(0.005, 0.005, file_name, transform=fig.transFigure, fontsize='x-small', color='0.5')
 
-    plt.savefig("{}/separate_indirect_exchanges_proportions.pdf".format(analysis.parameters.fig_folder))
+        plt.savefig("{}/separate_indirect_exchanges_proportions_{}.pdf"
+                    .format(analysis.parameters.fig_folder, file_name))
+
     plt.show()
