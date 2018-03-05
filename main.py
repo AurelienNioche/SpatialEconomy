@@ -5,6 +5,8 @@ import os
 import shutil
 import json
 import argparse
+import glob
+import pickle
 
 import model
 import analysis
@@ -31,7 +33,7 @@ def prepare():
             break
 
 
-def main_multi():
+def produce_data_pool():
 
     with open(parameters_files["pool"], "r") as f:
         pp = model.data_structure.ParametersPool(**json.load(f))
@@ -81,17 +83,42 @@ def main_multi():
 
     r = model.data_structure.ResultPool(data=backups, parameters=pp)
     r.save()
+    return r
 
-    analysis.pool.run(r)
 
-
-def main_single():
+def produce_data_single():
 
     with open(parameters_files["single"], "r") as f:
         parameters = json.load(f)
 
     r = run(parameters, multi=False)
     r.save()
+
+    return r
+
+
+def main_pool(force):
+
+    if not (os.path.exists("data/pickle") and glob.glob("data/pickle/pool*")) or force:
+        r = produce_data_pool()
+
+    else:
+        data_file = sorted(glob.glob("data/pickle/pool*"))[-1]
+        with open(data_file, "rb") as f:
+            r = pickle.load(f)
+
+    analysis.pool.run(r)
+
+
+def main_single(force):
+
+    if not (os.path.exists("data/pickle") and glob.glob("data/pickle/single*")) or force:
+        r = produce_data_single()
+
+    else:
+        data_file = sorted(glob.glob("data/pickle/single*"))[-1]
+        with open(data_file, "rb") as f:
+            r = pickle.load(f)
 
     analysis.separate.run(r)
 
@@ -106,9 +133,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Produce figures.')
     parser.add_argument('-s', '--single', action="store_true", default=False,
                         help="Run single simulation")
+    parser.add_argument('-f', '--force', action="store_true", default=False,
+                        help="Run simulations even if data already exist")
     parsed_args = parser.parse_args()
 
     if parsed_args.single:
-        main_single()
+        main_single(parsed_args.force)
     else:
-        main_multi()
+        main_pool(parsed_args.force)

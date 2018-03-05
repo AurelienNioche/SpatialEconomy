@@ -1,5 +1,6 @@
 from pylab import np, plt
 import enum
+import os
 
 import analysis
 
@@ -88,15 +89,46 @@ class MoneyAnalyst(object):
             interruptions=interruptions)
 
 
-class X(enum.Enum):
+def separate_plots_for_indirect_exchanges(results_pool):
 
-    alpha = enum.auto()
-    tau = enum.auto()
-    vision_area = enum.auto()
-    x = enum.auto()
+    data = results_pool.data
+
+    for i, d in enumerate(data):
+
+        param_str = {
+            "x": d.parameters.x0,  # Suppose equal repartition
+            "stride": d.parameters.stride,
+            "movement_area": d.parameters.movement_area,
+            "vision_area": d.parameters.vision_area,
+            "alpha": float("{:.2f}".format(d.parameters.alpha)),
+            "tau": float("{:.2f}".format(d.parameters.tau)),
+            "map_width": d.parameters.map_width,
+            "map_height": d.parameters.map_height
+        }
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        lines = ax.plot(d.indirect_exchanges_proportions)
+        ax.set_ylim(0., 1.)
+        ax.set_xlabel("t")
+        ax.set_ylabel("Indirect exchanges proportion")
+        plt.text(0.005, 0.005, param_str, transform=fig.transFigure, fontsize='x-small', color='0.5')
+        plt.legend(lines, ("type-0", "type-1", "type-2"))
+        plt.title("Eco {} of pool {}".format(i, results_pool.file_name))
+
+        plt.savefig(
+            "{}/{}/ind/{}_indirect_{}.pdf"
+            .format(analysis.parameters.fig_folder, results_pool.file_name, results_pool.file_name, i))
+        plt.show()
 
 
-def run(results_pool):
+def summary_plots(results_pool):
+
+    class X(enum.Enum):
+        alpha = enum.auto()
+        tau = enum.auto()
+        vision_area = enum.auto()
+        x = enum.auto()
 
     parameters = results_pool.parameters
     data = results_pool.data
@@ -142,21 +174,30 @@ def run(results_pool):
     ax.set_ylabel("n monetary states")
     ax.set_xlabel(r"vision area")
 
-    ax = fig.add_subplot(223)
-    ax.scatter(x[X.vision_area], y, c="black", alpha=0.4, s=15)
-    ax.set_ylabel("n monetary states")
-    ax.set_xlabel(r"vision area")
-
     ax = fig.add_subplot(224)
     ax.scatter(x[X.x], y, c="black", alpha=0.4, s=15)
     ax.set_ylabel("n monetary states")
     ax.set_xlabel(r"n agents")
 
-    plt.text(0.005, 0.005, results_pool.file_name, transform=fig.transFigure, fontsize='x-small', color='0.5')
+    plt.text(0.005, 0.005, results_pool.file_name, transform=fig.transFigure,
+             fontsize='x-small', color='0.5')
 
     plt.tight_layout()
 
-    plt.savefig("{}/separate_indirect_exchanges_proportions_{}.pdf"
-                .format(analysis.parameters.fig_folder, results_pool.file_name))
+    plt.savefig(
+        "{}/{}/{}_summary.pdf".format(
+            analysis.parameters.fig_folder,
+            results_pool.file_name,
+            results_pool.file_name))
 
     plt.show()
+
+
+def run(results_pool):
+
+    os.makedirs("{}/{}/ind".format(
+        analysis.parameters.fig_folder,
+        results_pool.file_name), exist_ok=True)
+
+    separate_plots_for_indirect_exchanges(results_pool)
+    summary_plots(results_pool)

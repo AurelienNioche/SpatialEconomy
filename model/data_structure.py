@@ -65,7 +65,7 @@ class Result:
         self.exchange_maps = exchange_maps
         self.agent_maps = agent_maps
         self.parameters = parameters
-        self.file_name = datetime.datetime.now().strftime("%y_%m_%d_%H_%M_%S_%f")
+        self.file_name = datetime.datetime.now().strftime("single_%y_%m_%d_%H_%M_%S_%f")
 
     def save(self):
 
