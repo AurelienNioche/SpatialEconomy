@@ -10,5 +10,6 @@
   "map_width": 10,
   "map_height": 10,
   "t_max": 100,
-  "seed": 1082153601
+  "seed": 1082153601,
+  "graphics": true
 }

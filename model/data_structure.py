@@ -7,7 +7,7 @@ import os
 class Parameters:
 
     def __init__(self, vision_area, movement_area, stride, x0, x1, x2,
-                 alpha, tau, map_width, map_height, t_max, seed):
+                 alpha, tau, map_width, map_height, t_max, seed, graphics):
         self.x0 = x0
         self.x1 = x1
         self.x2 = x2
@@ -20,6 +20,7 @@ class Parameters:
         self.map_height = map_height
         self.t_max = t_max
         self.seed = seed
+        self.graphics = graphics
 
 
 class ParametersPool:
@@ -28,7 +29,7 @@ class ParametersPool:
                  alpha_min, alpha_max, tau_min, tau_max,
                  movement_area_min, movement_area_max,
                  vision_area_min, vision_area_max, x_min, x_max,
-                 stride_min, stride_max, n, seed):
+                 stride_min, stride_max, n, seed, graphics):
         
         self.t_max = t_max
         self.map_height = map_height
@@ -47,6 +48,7 @@ class ParametersPool:
         self.stride_max = stride_max
         self.n = n
         self.seed = seed
+        self.graphics = graphics
 
 
 class Result:

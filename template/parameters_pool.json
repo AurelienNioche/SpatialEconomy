@@ -15,5 +15,6 @@
   "stride_min": 0,
   "stride_max": 1,
   "n": 100,
-  "seed": 0
+  "seed": 0,
+  "graphics": true
 }

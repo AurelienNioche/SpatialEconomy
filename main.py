@@ -68,7 +68,8 @@ def produce_data_pool():
                 map_width=pp.map_width,
                 map_height=pp.map_height,
                 t_max=pp.t_max,
-                seed=seeds[i]
+                seed=seeds[i],
+                graphics=pp.graphics
             ).__dict__
         )
 

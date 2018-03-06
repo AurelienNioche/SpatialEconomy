@@ -199,5 +199,6 @@ def run(results_pool):
         analysis.parameters.fig_folder,
         results_pool.file_name), exist_ok=True)
 
-    separate_plots_for_indirect_exchanges(results_pool)
-    summary_plots(results_pool)
+    # separate_plots_for_indirect_exchanges(results_pool)
+    # summary_plots(results_pool)
+    print(results_pool.data[0].exchange_maps)

@@ -87,7 +87,7 @@ def run(t_max=600, map_height=30, map_width=30,
         t_max=t_max, map_height=map_height, map_width=map_width,
         x0=x0, x1=x1, x2=x2,
         vision_area=vision_area, movement_area=movement_area, stride=stride,
-        alpha=alpha, tau=tau, seed=seed
+        alpha=alpha, tau=tau, seed=seed, graphics=graphics
     )
 
     return data_structure.Result(
