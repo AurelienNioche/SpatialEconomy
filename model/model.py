@@ -44,6 +44,48 @@ import itertools
 
 class Model:
 
+    # agent-type as row index, relative-exchange as column index, absolute-exchange as value
+    absolute_matrix = np.array(
+        [
+            [
+                [0, 1], [0, 2], [2, 1], [2, 0]
+            ],
+            [
+                [1, 2], [1, 0], [0, 2], [0, 1]
+            ],
+            [
+                [2, 0], [2, 1], [1, 0], [1, 2]
+            ]
+        ], dtype=int)
+
+    absolute_exchange_to_int = np.array(
+        [
+            [-1, 0, 1],
+            [2, -1, 3],
+            [4, 5, -1]
+        ]
+    )
+
+    # # i: type; j: i_choice
+    int_to_relative_choice = np.array(
+        [[0, 1, -1, -1, 3, 2],
+         [3, 2, 1, 0, -1, -1],
+         [-1, -1, 2, 3, 0, 1]], dtype=int)
+
+    # To convert relative choices into absolute choices
+    # 0 : 0 -> 1
+    # 1 : 0 -> 2
+    # 2 : 1 -> 0
+    # 3 : 1 -> 2
+    # 4 : 2 -> 0
+    # 5 : 2 -> 1
+
+    # i: type; j: i_choice
+    relative_to_absolute_choice = np.array([
+        [0, 1, 5, 4],
+        [3, 2, 1, 0],
+        [4, 5, 2, 3]], dtype=int)
+
     def __init__(self, vision_area=5, movement_area=5, stride=1, x0=10, x1=10, x2=10,
                  alpha=0.1, tau=0.05, map_width=20, map_height=2):
 
@@ -57,57 +99,17 @@ class Model:
         self.map_width = map_width
         self.map_height = map_height
 
-        self.workforce = np.array([x0, x1, x2], dtype=int)  # Number of agents by type
-
         self.alpha = alpha  # Learning coefficient
         self.tau = tau  # Softmax parameter
 
         # Attributes for computation
 
-        self.n = sum(self.workforce)  # Total number of agents
+        self.n = x0 + x1 + x2  # Total number of agents
 
-        self.absolute_matrix = np.array([[[0, 1], [1, 2], [2, 0]],
-                                         [[0, 2], [1, 0], [2, 1]],
-                                         [[2, 1], [0, 2], [1, 0]],
-                                         [[2, 0], [0, 1], [1, 2]]], dtype=object)
-
-        self.absolute_exchange_to_int = \
-            {
-                (0, 1): 0,
-                (0, 2): 1,
-                (1, 0): 2,
-                (1, 2): 3,
-                (2, 0): 4,
-                (2, 1): 5,
-
-            }
-
-        # # i: type; j: i_choice
-        self.int_to_relative_choice = np.array([[0, 1, -1, -1, 3, 2],
-                                                [3, 2, 1, 0, -1, -1],
-                                                [-1, -1, 2, 3, 0, 1]], dtype=int)
-
-        # To convert relative choices into absolute choices
-        # 0 : 0 -> 1
-        # 1 : 0 -> 2
-        # 2 : 1 -> 0
-        # 3 : 1 -> 2
-        # 4 : 2 -> 0
-        # 5 : 2 -> 1
-
-        # i: type; j: i_choice
-        self.relative_to_absolute_choice = np.array([
-            [0, 1, 5, 4],
-            [3, 2, 1, 0],
-            [4, 5, 2, 3]], dtype=int)
-
-        self.type = np.zeros(self.n, dtype=int)
-        self.good = np.zeros(self.n, dtype=int)
-
-        self.type[:] = np.array(
-            [0, ] * self.workforce[0] + [1, ] * self.workforce[1] + [2, ] * self.workforce[2])
-        self.good[:] = np.array(
-            [0, ] * self.workforce[0] + [1, ] * self.workforce[1] + [2, ] * self.workforce[2])
+        self.type = np.array(
+            [0, ] * x0 + [1, ] * x1 + [2, ] * x2, dtype=int)
+        self.good = np.array(
+            [0, ] * x0 + [1, ] * x1 + [2, ] * x2, dtype=int)
 
         # Each agent possesses an index by which he can be identified.
         #  Here are the the indexes lists corresponding to each type of agent:
@@ -117,8 +119,7 @@ class Model:
         self.idx1 = idx[self.type == 1]
         self.idx2 = idx[self.type == 2]
 
-        self.position = np.zeros((self.n, 2), dtype=int)
-        self.position[:] = -1
+        self.position = np.ones((self.n, 2), dtype=int) * -1
 
         self.x_perimeter = np.zeros((self.n, 2))
         self.y_perimeter = np.zeros((self.n, 2))
@@ -142,18 +143,18 @@ class Model:
         self.estimation = np.zeros((self.n, 4))  # There is 4 exchange types relevant for each agent
 
         # For each cell, it will contain the number of exchange for every of the three goods
-        self.exchange_map = np.zeros(shape=(self.map_width, self.map_height, 3), dtype=int)
+        self.exchange_map = np.zeros(shape=(3, self.map_width, self.map_height), dtype=int)
 
         # For each cell, it will contain idx of agent
-        self.agent_map = np.zeros((self.map_width, self.map_height), dtype=int)
+        self.agent_map = np.ones((self.map_width, self.map_height), dtype=int) * -1
 
         self.direct_choices_proportions = np.zeros(3)
         self.indirect_choices_proportions = np.zeros(3)
 
-        self.direct_exchange = np.zeros(3)
-        self.indirect_exchange = np.zeros(3)
+        self.direct_exchange = np.zeros(3, dtype=int)
+        self.indirect_exchange = np.zeros(3, dtype=int)
 
-        self.exchange_counter = np.zeros(3)
+        self.exchange_counter = np.zeros(3, dtype=int)
 
         # This is the initial guest (same for every agent).
         # '1' means each type of exchange can be expected to be realized in only one unit of time
@@ -172,8 +173,7 @@ class Model:
 
     def setup_insert_agents_on_map(self):
 
-        croissant_order = range(self.n)
-        random_order = np.random.permutation(croissant_order)
+        random_order = np.random.permutation(range(self.n))
 
         for idx in random_order:
 
@@ -181,7 +181,7 @@ class Model:
                 x = np.random.randint(0, self.map_width)
                 y = np.random.randint(0, self.map_height)
 
-                if self.agent_map[x, y] != -1:
+                if self.agent_map[x, y] == -1:
                     self.position[idx] = x, y
                     self.agent_map[x, y] = idx
 
@@ -197,9 +197,11 @@ class Model:
     # --------------------------------------------------||| RESET |||----------------------------------------------- #
 
     def reset(self):
-        self.direct_exchange[:] = 0.
-        self.indirect_exchange[:] = 0.
-        self.exchange_counter[:] = 0.
+
+        self.direct_exchange[:] = 0
+        self.indirect_exchange[:] = 0
+        self.exchange_counter[:] = 0
+        self.exchange_map[:] = 0
 
     # ---------------------------------------------||| MOVE /  MAP OPERATIONS |||------------------------------------ #
 
@@ -284,6 +286,7 @@ class Model:
                                           exchange_type=choice_current_agent)
         if partner_id != -1:
             self.encounter_proceed_to_exchange(idx, partner_id)
+            self.encounter_exchange_count(idx, partner_id)
 
     def encounter_check_nearby_positions(self, idx):
 
@@ -332,8 +335,8 @@ class Model:
         # The agent chooses the good he wants to obtain and asks agents around him for it
 
         self.choose(idx)
-        choice_current_agent = list(self.absolute_matrix[self.i_choice[idx], self.type[idx]])
-        int_choice_current_agent = self.absolute_exchange_to_int[tuple(choice_current_agent)]
+        choice_current_agent = self.absolute_matrix[self.type[idx], self.i_choice[idx]]
+        int_choice_current_agent = self.absolute_exchange_to_int[choice_current_agent[0], choice_current_agent[1]]
 
         matching_list = list()
 
@@ -346,8 +349,8 @@ class Model:
             assert type(partner_id) in (int, np.int64)
 
             self.choose(partner_id)
-            choice_current_partner = list(self.absolute_matrix[self.i_choice[partner_id], self.type[partner_id]])
-            success = choice_current_partner[::-1] == choice_current_agent
+            choice_current_partner = self.absolute_matrix[self.type[partner_id], self.i_choice[partner_id]]
+            success = np.all(choice_current_partner[::-1] == choice_current_agent)
             matching_list.append(success)
             if success:
                 partner_ids.append(partner_id)
@@ -405,13 +408,15 @@ class Model:
         x, y = self.position[partner_id]
 
         if self.good[idx] + self.good[partner_id] == 1:
-            self.exchange_map[x, y, 0] += 1
+            i = 0
 
         elif self.good[idx] + self.good[partner_id] == 3:
-            self.exchange_map[x, y, 1] += 1
+            i = 1
 
         else:
-            self.exchange_map[x, y, 2] += 1
+            i = 2
+
+        self.exchange_map[i, x, y] += 1
 
 # ----------------------------------------------------||| CHOICE ||| -------------------------------------------- #
 

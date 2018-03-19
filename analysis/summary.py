@@ -1,8 +1,7 @@
-from pylab import np, plt
+import numpy as np
 import enum
 import os
-
-import analysis
+import matplotlib.pyplot as plt
 
 
 class MoneyAnalysis:
@@ -89,49 +88,13 @@ class MoneyAnalyst(object):
             interruptions=interruptions)
 
 
-def separate_plots_for_indirect_exchanges(results_pool):
-
-    data = results_pool.data
-
-    for i, d in enumerate(data):
-
-        param_str = {
-            "x": d.parameters.x0,  # Suppose equal repartition
-            "stride": d.parameters.stride,
-            "movement_area": d.parameters.movement_area,
-            "vision_area": d.parameters.vision_area,
-            "alpha": float("{:.2f}".format(d.parameters.alpha)),
-            "tau": float("{:.2f}".format(d.parameters.tau)),
-            "map_width": d.parameters.map_width,
-            "map_height": d.parameters.map_height
-        }
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        lines = ax.plot(d.indirect_exchanges_proportions)
-        ax.set_ylim(0., 1.)
-        ax.set_xlabel("t")
-        ax.set_ylabel("Indirect exchanges proportion")
-        plt.text(0.005, 0.005, param_str, transform=fig.transFigure, fontsize='x-small', color='0.5')
-        plt.legend(lines, ("type-0", "type-1", "type-2"))
-        plt.title("Eco {} of pool {}".format(i, results_pool.file_name))
-
-        plt.savefig(
-            "{}/{}/ind/{}_indirect_{}.pdf"
-            .format(analysis.parameters.fig_folder, results_pool.file_name, results_pool.file_name, i))
-        plt.show()
-
-
-def summary_plots(results_pool):
+def plot(data):
 
     class X(enum.Enum):
         alpha = enum.auto()
         tau = enum.auto()
         vision_area = enum.auto()
         x = enum.auto()
-
-    parameters = results_pool.parameters
-    data = results_pool.data
 
     x = {
         X.alpha: [],
@@ -141,9 +104,10 @@ def summary_plots(results_pool):
     }
     y = []
 
-    for d in data:
+    for d in data.data:
+
         a = MoneyAnalyst.run(
-            t_max=parameters.t_max,
+            t_max=data.parameters.t_max,
             direct_exchange=d.direct_exchanges_proportions,
             indirect_exchange=d.indirect_exchanges_proportions
         )
@@ -179,26 +143,15 @@ def summary_plots(results_pool):
     ax.set_ylabel("n monetary states")
     ax.set_xlabel(r"n agents")
 
-    plt.text(0.005, 0.005, results_pool.file_name, transform=fig.transFigure,
-             fontsize='x-small', color='0.5')
+    ax.text(0.005, 0.005, data.file_name, transform=fig.transFigure,
+            fontsize='x-small', color='0.5')
 
     plt.tight_layout()
 
-    plt.savefig(
-        "{}/{}/{}_summary.pdf".format(
-            analysis.parameters.fig_folder,
-            results_pool.file_name,
-            results_pool.file_name))
+    file_path = "figures/{}/{}_summary.pdf".format(
+        data.file_name,
+        data.file_name)
 
-    plt.show()
-
-
-def run(results_pool):
-
-    os.makedirs("{}/{}/ind".format(
-        analysis.parameters.fig_folder,
-        results_pool.file_name), exist_ok=True)
-
-    # separate_plots_for_indirect_exchanges(results_pool)
-    # summary_plots(results_pool)
-    print(results_pool.data[0].exchange_maps)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    plt.savefig(file_path)
+    plt.close(fig)

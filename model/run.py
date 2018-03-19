@@ -33,11 +33,11 @@ def run(t_max=600, map_height=30, map_width=30,
 
     if graphics:
 
-        agent_maps = np.zeros((t_max, map_width, map_height))
-        exchange_maps = np.zeros((t_max, map_width, map_height, 3))
+        agent_maps = np.zeros((t_max, map_width, map_height), dtype=int)
+        exchange_maps = np.zeros((t_max, 3, map_width, map_height), dtype=int)
 
         # Save initial positions
-        agent_maps[0] = eco.agent_map.copy()
+        agent_maps[0] = eco.agent_map
 
     if multi:
         iterable = range(t_max)
@@ -46,8 +46,6 @@ def run(t_max=600, map_height=30, map_width=30,
 
     for t in iterable:
 
-    #for t in range(t_max):
-
         eco.reset()
 
         np.random.shuffle(idx)
@@ -55,7 +53,8 @@ def run(t_max=600, map_height=30, map_width=30,
         for i in idx:
 
             # move agent, then make them proceeding to exchange
-            eco.move(i)
+            if stride > 0:
+                eco.move(i)
             eco.encounter(i)
 
         # -------------------- #
@@ -63,9 +62,8 @@ def run(t_max=600, map_height=30, map_width=30,
         # ------------------- #
         if graphics:
 
-            agent_maps[t] = eco.agent_map.copy()
-
-            exchange_maps[t] = eco.exchange_map.copy()
+            agent_maps[t] = eco.agent_map
+            exchange_maps[t] = eco.exchange_map
 
         # -----------------  #
 
@@ -75,8 +73,8 @@ def run(t_max=600, map_height=30, map_width=30,
         # for each "t" we compute the proportion of direct choices
         eco.compute_choices_proportions()
 
-        direct_exchanges_proportions[t, :] = eco.direct_choices_proportions.copy()
-        indirect_exchanges_proportions[t, :] = eco.indirect_choices_proportions.copy()
+        direct_exchanges_proportions[t, :] = eco.direct_choices_proportions
+        indirect_exchanges_proportions[t, :] = eco.indirect_choices_proportions
 
     # Finally we compute the direct choices mean for each type
     # of agent and return it as well as the direct choices proportions

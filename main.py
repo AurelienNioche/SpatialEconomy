@@ -9,7 +9,9 @@ import glob
 import pickle
 
 import model
-import analysis
+
+import analysis.separate
+import analysis.summary
 
 parameters_folder = "parameters"
 template_folder = "template"
@@ -108,7 +110,8 @@ def main_pool(force):
         with open(data_file, "rb") as f:
             r = pickle.load(f)
 
-    analysis.pool.run(r)
+    analysis.separate.plot_indirect_exchanges(data=r)
+    analysis.summary.plot(data=r)
 
 
 def main_single(force):
@@ -121,7 +124,7 @@ def main_single(force):
         with open(data_file, "rb") as f:
             r = pickle.load(f)
 
-    analysis.separate.run(r)
+    analysis.separate.plot_indirect_exchanges(data=r)
 
 
 if __name__ == "__main__":

@@ -95,8 +95,12 @@ class ResultPool:
 
     def save(self):
 
-        with open("{}{}.p".format(self.pickle_folder, self.file_name), 'wb') as f:
-            pickle.dump(self, f)
+        file_name = "{}{}.p".format(self.pickle_folder, self.file_name)
+        try:
+            with open(file_name, 'wb') as f:
+                pickle.dump(self, f)
+        except OSError:
+            print("Could not save '{}'".format(file_name))
 
         with open("{}{}.json".format(self.json_folder, self.file_name), 'w') as f:
             json.dump(self.parameters.__dict__, f, indent=2)

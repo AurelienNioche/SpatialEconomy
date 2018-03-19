@@ -16,14 +16,19 @@ class Plot:
 
     matplotlib.pyplot.rcParams['toolbar'] = 'None'
 
-    color_list = ['white', 'blue', 'red', 'purple']
+    color_list = ['white', 'C0', 'C1', 'C2']
     color_map = matplotlib.colors.ListedColormap(color_list)
 
     video_name = "SpatialEconomy.mp4"
 
-    def __init__(self, data=np.random.randint(len(color_list), size=(10, 4, 4)), mode=Mode.DISPLAY):
+    def __init__(self, data=None, mode=Mode.DISPLAY):
 
-        self.data = data
+        if data is None:
+            print("Demo data are used")
+            self.data = np.random.randint(len(self.color_list), size=(10, 4, 4))
+        else:
+            self.data = data
+
         self.mode = mode
 
         # New figure with white background
@@ -35,7 +40,7 @@ class Plot:
 
         self.im = self.ax.imshow(
             self.data[0], interpolation='none', aspect='auto', origin='upper',
-            cmap=self.color_map, vmin=0, vmax=len(self.color_list))
+            cmap=self.color_map, vmin=-1, vmax=len(self.color_list) - 1)
 
         self.t = 0
 
@@ -82,11 +87,11 @@ class Plot:
             self.fig.canvas.draw()
 
 
-def main():
+def plot(data=None, mode=Mode.DISPLAY):
 
-    Plot(mode=Mode.DISPLAY)
+    Plot(data=data, mode=mode)
 
 
 if __name__ == "__main__":
 
-    main()
+    plot()
